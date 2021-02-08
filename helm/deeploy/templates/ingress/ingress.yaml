@@ -1,0 +1,164 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: deeploy-frontend-gateway
+  namespace: deeploy
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - '{{ .Values.host }}'
+    {{- if .Values.security.tls.enabled }}
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: deeploy-cert
+      hosts:
+        - '{{ .Values.host }}'
+    {{- end }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: deeploy-frontend-virtualservice
+  namespace: deeploy
+spec:
+  hosts:
+    - {{ .Values.host }}
+  gateways:
+    - deeploy-frontend-gateway
+  http:
+    - route:
+        - destination:
+            port:
+              number: 80
+            host: deeploy-frontend.deeploy.svc.cluster.local
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: deeploy-api-gateway
+  namespace: deeploy
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - {{ printf "*.%s" .Values.host | quote }}
+    {{- if .Values.security.tls.enabled }}
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: deeploy-wildcard-cert
+      hosts:
+        - {{ printf "*.%s" .Values.host | quote }}
+    {{- end }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: deeploy-api-virtualservice
+  namespace: deeploy
+spec:
+  hosts:
+    - {{ printf "api.%s" .Values.host }}
+  gateways:
+    - deeploy-api-gateway
+  http:
+    - route:
+        - destination:
+            port:
+              number: 80
+            host: deeploy-ambassador.deeploy.svc.cluster.local
+      corsPolicy:
+        allowCredentials: true
+        allowHeaders:
+          - '*'
+          - 'Authorization'
+          - 'Content-Type'
+          - 'Cookie'
+          - 'X-Kratos-Authenticated-Identity-Id'
+        allowMethods:
+          - POST
+          - GET
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+          - HEAD
+          - CONNECT
+        allowOrigin:
+          - "http{{- if .Values.security.tls.enabled -}}s{{- end -}}://{{ .Values.host }}"
+        maxAge: 24h
+{{- if not .Values.remoteBlobStorage.enabled }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: deeploy-storage-virtualservice
+  namespace: deeploy
+spec:
+  hosts:
+    - {{ printf "storage.%s" .Values.host | quote }}
+  gateways:
+    - deeploy-api-gateway
+  http:
+    - route:
+        - destination:
+            port:
+              number: 9000
+            host: deeploy-minio.deeploy.svc.cluster.local
+      corsPolicy:
+        allowCredentials: true
+        allowHeaders:
+          - '*'
+          - 'Authorization'
+        allowMethods:
+          - POST
+          - GET
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+          - HEAD
+          - CONNECT
+        allowOrigin:
+          - "http{{- if .Values.security.tls.enabled -}}s{{- end -}}://{{ .Values.host }}"
+        maxAge: 24h
+{{- end }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: deeploy-manual
+  namespace: deeploy
+spec:
+  hosts:
+    - {{ printf "docs.%s" .Values.host }}
+  gateways:
+    - deeploy-api-gateway
+  http:
+    - route:
+        - destination:
+            port:
+              number: 80
+            host: deeploy-manual.deeploy.svc.cluster.local

@@ -1,0 +1,30 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: model-deployer
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: kfserving-deploy
+  namespace: deeploy
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kfserving-deploy-models
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: model-deployer
+subjects:
+- kind: ServiceAccount
+  name: kfserving-deploy
+  namespace: deeploy

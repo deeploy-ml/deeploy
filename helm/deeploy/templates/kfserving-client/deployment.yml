@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-kfserving
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-kfserving
+  template:
+    metadata:
+      labels:
+        app: deeploy-kfserving
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/kfserving-client/configMap.yml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/kfserving-client/configSecret.yml") . | sha256sum }}
+    spec:
+      serviceAccountName: kfserving-deploy
+      serviceAccount: kfserving-deploy
+      containers:
+      - name: deeploy-kfserving
+        {{ if not .Values.devMode -}}
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/kfserving:{{ .Values.images.tag }}"
+        {{- else -}}
+        image: "deeploy-kfserving"
+        {{- end }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: kfserving-client
+        volumeMounts:
+          - mountPath: "/app/config"
+            name: kube-config-raw
+            readOnly: true
+      volumes:
+        - name: kube-config-raw
+          secret:
+            secretName: kfserving-client
+      imagePullSecrets:
+        - name: image-registry

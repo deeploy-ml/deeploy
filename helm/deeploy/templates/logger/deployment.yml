@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-logger
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-logger
+  template:
+    metadata:
+      labels:
+        app: deeploy-logger
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/logger/configMap.yml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/logger/configSecret.yml") . | sha256sum }}
+        checksum/rabbitmq: {{ include (print $.Template.BasePath "/rabbitmq/secret.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: deeploy-logger
+          {{ if not .Values.devMode -}}
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy:{{ .Values.images.tag }}"
+          command:
+            - "/bin/sh"
+            - "./start.sh"
+            - "logger"
+          {{- else -}}
+          image: "deeploy-logger"
+          command:
+            - "nest"
+            - "start"
+            - "logger"
+            - "--watch"
+          {{- end }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-username
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
+            {{if .Values.devMode -}}
+            - name: RUN_ENV
+              value: 'tilt'
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: logger
+            - configMapRef:
+                name: logger
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 3
+      imagePullSecrets:
+        - name: image-registry
+      {{ if .Values.devMode -}}
+      initContainers:
+        - name: deeploy-logger-init
+          command:
+            - '/bin/sh'
+            - './start-dev.sh'
+            - 'logger'
+          env:
+            - name: RUN_ENV
+              value: 'tilt'
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-username
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
+          image: "deeploy-logger"
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: logger
+            - configMapRef:
+                name: logger
+      {{- end }}

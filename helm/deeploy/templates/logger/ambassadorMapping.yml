@@ -1,0 +1,97 @@
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-logger
+  namespace: deeploy
+spec:
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/logs($|/.*)'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/logs($|/.*)'
+    substitution: '/workspaces/\1/deployments/\2/logs\3'
+  service: deeploy-logger.deeploy
+  timeout_ms: 60000
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS 
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-logger-monitoring
+  namespace: deeploy
+spec:
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(activity|deployments/.*/(activity|performance|errors))'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(activity|deployments/.*/(activity|performance|errors))'
+    substitution: '/workspaces/\1/\2'
+  service: deeploy-logger.deeploy
+  timeout_ms: 60000
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS 
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-logger-swagger
+  namespace: deeploy
+spec:
+  prefix: '/v2/logs/swagger'
+  rewrite: '/v2/logs/swagger'
+  service: deeploy-logger.deeploy
+  add_request_headers:
+    x-is-public: "true"
+  cors:
+    origins:
+      - "https://{{ .Values.host }}"
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true

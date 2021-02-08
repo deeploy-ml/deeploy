@@ -1,0 +1,86 @@
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-introspector-v1
+  namespace: deeploy
+spec:
+  prefix: /v1/introspector
+  service: deeploy-introspector.deeploy
+  rewrite: /introspector
+  timeout_ms: 60000
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS 
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers: "*"
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-introspector-v2
+  namespace: deeploy
+spec:
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(predict|explain)'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(predict|explain)'
+    substitution: '/workspaces/\1/deployments/\2/\3'
+  service: deeploy-introspector.deeploy
+  timeout_ms: 60000
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS 
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers: "*"
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-introspector-swagger
+  namespace: deeploy
+spec:
+  prefix: '/v2/inference/swagger'
+  rewrite: '/v2/inference/swagger'
+  service: deeploy-introspector.deeploy
+  add_request_headers:
+    x-is-public: "true"
+  cors:
+    origins:
+      - "https://{{ .Values.host }}"
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true

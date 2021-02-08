@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logger
+  namespace: deeploy
+data:
+  PORT: '3000'
+  DB_SYNCHRONIZE: 'false'
+  DB_LOGGING: 'false'
+  DB_MIGRATIONS: 'true'
+  DOMAIN: {{ .Values.host | quote }}

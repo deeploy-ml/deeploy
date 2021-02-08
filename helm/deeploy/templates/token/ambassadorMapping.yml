@@ -1,0 +1,97 @@
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-token
+  namespace: deeploy
+spec:
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/tokens($|/.*)'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/tokens($|/.*)'
+    substitution: '/workspaces/\1/deployments/\2/tokens\3'
+  service: deeploy-token.deeploy
+  timeout_ms: 10000
+  use_websocket: true 
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-token-keys
+  namespace: deeploy
+spec:
+  prefix: '/v2/keys($|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/keys($|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+    substitution: '/keys\1'
+  service: deeploy-token.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-token-swagger
+  namespace: deeploy
+spec:
+  prefix: '/v2/tokens/swagger'
+  rewrite: '/v2/tokens/swagger'
+  service: deeploy-token.deeploy
+  add_request_headers:
+    x-is-public: "true"
+  cors:
+    origins:
+      - "https://{{ .Values.host }}"
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true

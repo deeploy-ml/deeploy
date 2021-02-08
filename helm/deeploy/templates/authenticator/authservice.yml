@@ -1,0 +1,15 @@
+apiVersion: getambassador.io/v2
+kind: AuthService
+metadata:
+  name: authentication
+  namespace: deeploy
+spec:
+  auth_service: "deeploy-authenticator.deeploy:80"
+  path_prefix: "/extauth"
+  allowed_request_headers:
+    - "X-Forwarded-Host"
+    - "X-Forwarded-For"
+    - "X-Forwarded-Proto"
+    - "Cookie"
+  allowed_authorization_headers:
+    - "X-Kratos-Authenticated-Identity-Id"

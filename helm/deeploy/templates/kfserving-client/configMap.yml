@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kfserving-client
+  namespace: deeploy
+data:
+  {{ if not .Values.remoteBlobStorage.enabled -}}
+  BUCKET_NAME: "deeploy"
+  STORAGE_TYPE: "minio"
+  {{- else if and .Values.remoteBlobStorage.enabled (eq .Values.remoteBlobStorage.type "AWS_S3") -}}
+  BUCKET_NAME: {{ .Values.remoteBlobStorage.bucketName | quote }}
+  STORAGE_TYPE: "aws"
+  {{- else if and .Values.remoteBlobStorage.enabled (eq .Values.remoteBlobStorage.type "GCS") -}}
+  BUCKET_NAME: {{ .Values.remoteBlobStorage.bucketName | quote }}
+  STORAGE_TYPE: "gcs"
+  {{- end }}
+  DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'

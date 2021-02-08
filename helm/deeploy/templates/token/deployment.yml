@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-token
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-token
+  template:
+    metadata:
+      labels:
+        app: deeploy-token
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/token/configMap.yml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/token/configSecret.yml") . | sha256sum }}
+    spec:
+      containers:
+        - name: deeploy-token
+          {{ if not .Values.devMode -}}
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy:{{ .Values.images.tag }}"
+          command:
+            - "/bin/sh"
+            - "./start.sh"
+            - "token"
+          {{- else -}}
+          image: "deeploy-token"
+          command:
+            - "nest"
+            - "start"
+            - "token"
+            - "--watch"
+          {{- end}}
+          env:
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-username
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
+            {{ if .Values.devMode -}}
+            - name: RUN_ENV
+              value: 'tilt'
+            {{- end}}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: token
+            - configMapRef:
+                name: token
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 3
+      imagePullSecrets:
+        - name: image-registry
+      {{ if .Values.devMode -}}
+      initContainers:
+        - name: deeploy-token-init
+          command:
+            - '/bin/sh'
+            - './start-dev.sh'
+            - 'token'
+          env:
+            - name: RUN_ENV
+              value: 'tilt'
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-username
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
+          image: "deeploy-token"
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: token
+            - configMapRef:
+                name: token
+      {{- end }}

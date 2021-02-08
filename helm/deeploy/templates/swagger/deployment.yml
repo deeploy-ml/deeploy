@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swagger
+  namespace: deeploy
+spec:
+  selector:
+    matchLabels:
+      app: swagger
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: swagger
+    spec:
+      containers:
+      - name: swagger
+        {{ if not .Values.devMode -}}
+        image: swaggerapi/swagger-ui
+        {{- else -}}
+        image: docker.io/swaggerapi/swagger-ui
+        {{- end }}
+        imagePullPolicy: Always
+        env:
+          - name: URLS
+            value: {{ template "swaggerUrls" . }}
+          - name: OAUTH_CLIENT_ID
+            value: "frontend"
+          - name: OAUTH_APP_NAME
+            value: "Deeploy"
+          - name: WITH_CREDENTIALS
+            value: "true"
+          - name: OAUTH2_REDIRECT_URL
+            value: {{ printf "https://api.%s/swagger/oauth2-redirect.html" .Values.host }}
+          - name: BASE_URL
+            value: /v2/reference
+        ports:
+          - name: http-api
+            containerPort: 80

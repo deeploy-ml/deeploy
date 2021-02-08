@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: deeploy-token
+  namespace: deeploy
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      name: http-deeploy-token
+  selector:
+    app: deeploy-token

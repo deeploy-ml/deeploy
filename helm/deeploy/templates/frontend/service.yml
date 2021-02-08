@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: deeploy-frontend
+  namespace: deeploy
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      name: http-deeploy-frontend
+      targetPort: http-frontend
+  selector:
+    app: deeploy-frontend

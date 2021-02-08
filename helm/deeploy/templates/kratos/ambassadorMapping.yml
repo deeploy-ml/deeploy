@@ -1,0 +1,27 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: ory-kratos
+  namespace: deeploy
+spec:
+  prefix: /v1/auth/
+  service: ory-kratos.deeploy
+  rewrite: /
+  bypass_auth: true
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins:
+      - 'http://localhost:4200'
+      - 'http{{- if .Values.security.tls.enabled -}}s{{- end -}}://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers: '*'
+    credentials: true

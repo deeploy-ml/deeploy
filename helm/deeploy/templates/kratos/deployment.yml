@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ory-kratos
+  namespace: deeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ory-kratos
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ory-kratos
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/kratos/secret.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: ory-kratos
+          image: 'oryd/kratos:v0.5.1-sqlite'
+          command:
+            - kratos
+          args:
+            - serve
+            {{ if .Values.devMode -}}
+            - '--dev'
+            {{- end  }}
+          ports:
+            - name: http-public
+              containerPort: 4433
+              protocol: TCP
+            - name: http-admin
+              containerPort: 4434
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: ory-kratos
+          resources: {}
+          volumeMounts:
+            - name: configs
+              mountPath: /home/ory/user.schema.json
+              subPath: user.schema.json
+            - name: configs
+              mountPath: /home/ory/.kratos.yaml
+              subPath: kratos-config.yaml
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      volumes:
+        - name: configs
+          secret:
+            secretName: ory-kratos
+      initContainers:
+        - name: ory-kratos-init
+          image: 'oryd/kratos:v0.5.1-sqlite'
+          command:
+            - kratos
+          args:
+            - migrate
+            - sql
+            - '-e'
+            - '--yes'
+          envFrom:
+            - secretRef:
+                name: ory-kratos
+          resources: {}
+          volumeMounts:
+            - name: configs
+              mountPath: /home/ory/customer.schema.json
+              subPath: customer.schema.json
+            - name: configs
+              mountPath: /home/ory/.kratos.yaml
+              subPath: kratos-config.yaml
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent

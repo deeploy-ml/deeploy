@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-frontend
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-frontend
+  template:
+    metadata:
+      labels:
+        app: deeploy-frontend
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/frontend/configMap.yml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/frontend/configSecret.yml") . | sha256sum }}
+    spec:
+      containers:
+        - name: frontend
+          {{ if not .Values.devMode -}}
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/frontend:{{ .Values.images.tag }}"
+          {{- else -}}
+          image: "deeploy-frontend"
+          {{- end }}
+          imagePullPolicy: Always
+          ports:
+            - name: http-frontend
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: frontend
+          volumeMounts:
+          - name: env
+            mountPath: "/usr/share/nginx/html/environment"
+            readOnly: true
+      volumes:
+      - name: env
+        secret:
+          secretName: frontend
+          items:
+          - key: ENV
+            path: "env.js"
+      imagePullSecrets:
+        - name: image-registry

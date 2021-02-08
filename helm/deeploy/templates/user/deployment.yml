@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-user
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-user
+  template:
+    metadata:
+      labels:
+        app: deeploy-user
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/user/configMap.yml") . | sha256sum }}
+    spec:
+      containers:
+        - name: deeploy-user
+          {{ if not .Values.devMode -}}
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy:{{ .Values.images.tag }}"
+          command:
+            - "/bin/sh"
+            - "./start.sh"
+            - "user"
+          {{- else -}}
+          image: "deeploy-user"
+          command:
+            - "nest"
+            - "start"
+            - "user"
+            - "--watch"
+          {{- end}}
+          env:
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-username
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
+            {{ if .Values.devMode -}}
+            - name: RUN_ENV
+              value: 'tilt'
+            {{- end}}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: user
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 3
+      imagePullSecrets:
+        - name: image-registry

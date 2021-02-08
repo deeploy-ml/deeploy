@@ -1,0 +1,11 @@
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  swagger-mapping
+  namespace: deeploy
+spec:
+  prefix: /v2/reference
+  rewrite: /v2/reference
+  service: swagger.deeploy
+  add_request_headers:
+    x-is-public: 'true'

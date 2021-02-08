@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-manual
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-manual
+  template:
+    metadata:
+      labels:
+        app: deeploy-manual
+    spec:
+      containers:
+        - name: deeploy-manual
+          {{ if not .Values.devMode -}}
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/manual:{{ .Values.images.tag }}"
+          {{- else -}}
+          image: "deeploy-manual"
+          {{- end }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: image-registry

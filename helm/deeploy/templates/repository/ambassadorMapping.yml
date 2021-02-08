@@ -1,0 +1,64 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-repository
+  namespace: deeploy
+spec:
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/repositories($|/socket\.io|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})($|/.*))'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/repositories($|/socket\.io|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})($|/.*))'
+    substitution: '/workspaces/\1/repositories\2'
+  service: deeploy-repository.deeploy
+  timeout_ms: 60000
+  use_websocket: true
+  add_request_headers:
+    x-is-public: "true"
+  cors:
+    origins:
+      - "https://{{ .Values.host }}"
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-repository-swagger
+  namespace: deeploy
+spec:
+  prefix: '/v2/repositories/swagger'
+  rewrite: '/v2/repositories/swagger'
+  service: deeploy-repository.deeploy
+  add_request_headers:
+    x-is-public: "true"
+  cors:
+    origins:
+      - "https://{{ .Values.host }}"
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
