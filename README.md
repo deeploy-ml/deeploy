@@ -184,6 +184,12 @@ __Deeploy Database Values:__
 
 __Deeploy S3 Values:__
 
+For S3 you have two options:
+1. **Use a remote Storage repository (recommended)**. Deeploy currently supports AWS S3 & Google Cloud Storage
+2. **Don't configure remote Storage (not recommended)**. Deeploy spawns an on-cluster S3 service.
+    This is not recommended, as it does not make Deeploy stateless on the cluster. 
+    If you do want to use it, set `minio.enabled` to true.
+
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `remoteBlobStorage.enabled` | whether to use off-cluster S3 storage. If enabled, set `minio.enabled` to `false` | `true` |
@@ -208,6 +214,8 @@ __Deeploy E-mail Values:__
 
 __Deeploy Monitoring Values:__
 
+The Deeploy Monitoring feature sends anonimized usage data back to Deeploy. This helps us to improve the product.
+
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `monitoring.enabled` | whether to enable monitoring | `true` |
@@ -220,73 +228,6 @@ __Deeploy Security Values:__
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `security.tls.enabled` | whether to enable TLS | `true` |
-
-###### Image repository
-
-**registry**: The image registry, i.e. `registry.gitlab.com` or `index.docker.io/v2`
-
-**path**: path to the deeploy image in the registry, i.e. `/deeploy-ml/deeploy`
-
-**tag**: tag/version to be used for the Deeploy images
-
-**username** & **password**: username and password for access to the registry
-
-###### Host
-
-**host**: The url on which you will deploy Deeploy, i.e. `deeploy.client.com`
-
-###### License Key
-
-**deeployLicenseKey**: the Deeploy license key
-
-###### Email
-
-**username**: username for access to the mail server
-
-**password**: password for access to the mail server
-
-**smtpHost**: host of the smtp server, i.e. `smtp.sendgrid.net`
-
-**port**: the port on which to reach the server, i.e. `465`
-
-**fromAddress**: the address to send the email from, i.e. `notify@deeploy.client.ml`
-
-
-###### Database
-
-**host**: host of the database server
-
-**port**: database port, i.e. 5432
-
-**username**: username
-
-**password**: password
-
-###### Remote S3
-
-For S3 you have two options:
-1. **Use a remote Storage repository (recommended)**. Deeploy currently supports AWS S3 & Google Cloud Storage
-2. **Don't configure remote Storage (not recommended)**. Deeploy spawns an on-cluster S3 service.
-    This is not recommended, as it does not make Deeploy stateless on the cluster. 
-    If you do want to use it, set `minio.enabled` to true.
-
-**enabled**: boolean. Whether to use remote S3.
-
-**accessKey** (optional): Acces key for the AWS S3 bucket
-
-**secretKey** (optional): Secret key for the AWS S3 bucket
-
-**bucketName** (optional): AWS S3 bucket to be used by deeploy
-
-###### Monitoring
-
-The Deeploy Monitoring feature sends anonimized usage data back to Deeploy. This helps us to improve the product.
-
-**enabled**: boolean. Whether to opt in for the Monitoring feature.
-
-**credentials.username**: username for the monitoring feature
-
-**credentials.password**: password for the monitoring feature
 
 ##### 2. Install
 
