@@ -2,9 +2,9 @@
 devMode: false
 
 images:
-  registry: registry.hub.docker.com
-  path: /deeployml
-  tag: '1.4.1'
+  registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com/deeploy/
+  path: /deeploy
+  tag: '1.4.2'
   username:
   password:
 
@@ -71,6 +71,7 @@ minio:
   resources:
     requests:
       memory: '256Mi'
+
 # kratos:
 #   kratos:
 #     config:

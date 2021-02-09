@@ -165,8 +165,8 @@ __Deeploy Image Values:__
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `images.registry` | the registry to pull the Deeploy images from | `"registry.hub.docker.com"` |
-| `images.path` | the path to the DeeployML registry | `"/deeployml"` |
+| `images.registry` | the registry to pull the Deeploy images from | `"709825985650.dkr.ecr.us-east-1.amazonaws.com/deeploy/"` |
+| `images.path` | the path to the DeeployML registry | `"/deeploy"` |
 | `images.tag` | the version tag of the deeploy deployment | same as application version |
 | `images.username` | the username for the Docker registry | `""` |
 | `images.password` | the password for the Docker registry | `""` |
