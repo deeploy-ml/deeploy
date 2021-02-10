@@ -2,9 +2,9 @@
 devMode: false
 
 images:
-  registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com/deeploy/
+  registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com
   path: /deeploy
-  tag: '1.4.2'
+  tag: '1.4.3'
   username:
   password:
 
