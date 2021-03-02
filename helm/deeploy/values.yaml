@@ -4,13 +4,16 @@ devMode: false
 images:
   registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com
   path: /deeploy
-  tag: '1.4.3'
+  tag: '1.6.0'
   username:
   password:
 
 host:
 
-deeployLicenseKey:
+license:
+  # 'AWS' or 'DEEPLOY'
+  type: AWS
+  deeployLicenseKey:
 
 email:
   username:
@@ -44,6 +47,11 @@ security:
   tls:
     enabled: true
 
+  adminCredentials:
+    firstName:
+    lastName:
+    emailAddress:
+
 ambassador:
   image:
     repository: docker.io/datawire/ambassador
@@ -71,7 +79,6 @@ minio:
   resources:
     requests:
       memory: '256Mi'
-
 # kratos:
 #   kratos:
 #     config:
@@ -94,7 +101,7 @@ minio:
 #           settings:
 #             lifespan: 1h
 #             privileged_session_max_age: 1h
-#             ui_url: https://{{ .Values.host }}/profile/settings
+#             ui_url: https://{{ .Values.host }}/account/settings
 #             after:
 #               default_browser_return_url: https://{{ .Values.host }}/settings?succes=true
 #           verification:

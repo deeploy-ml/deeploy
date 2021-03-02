@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         app: deeploy-manual
+      annotations:
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
         - name: deeploy-manual
@@ -25,5 +27,8 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: general-config
       imagePullSecrets:
         - name: image-registry

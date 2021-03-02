@@ -17,6 +17,7 @@ spec:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/repository/configMap.yml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/repository/configSecret.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
         {{ if not .Values.remoteBlobStorage.enabled -}}
         checksum/s3: {{ include (print $.Template.BasePath "/kfserving/s3-secret.yml") . | sha256sum }}
         {{- end }}
@@ -73,6 +74,8 @@ spec:
               value: 'tilt'
             {{- end }}
           envFrom:
+            - secretRef:
+                name: general-config
             - secretRef:
                 name: repository
             - configMapRef:

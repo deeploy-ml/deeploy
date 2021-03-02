@@ -1,30 +1,30 @@
 apiVersion: getambassador.io/v2
-kind:  Mapping
+kind: Mapping
 metadata:
-  name:  deeploy-logger
+  name: deeploy-logger
   namespace: deeploy
 spec:
-  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/logs($|/.*)'
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(events|logs)($|/.*)'
   prefix_regex: true
-  regex_rewrite: 
-    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/logs($|/.*)'
-    substitution: '/workspaces/\1/deployments/\2/logs\3'
+  regex_rewrite:
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(events|logs)($|/.*)'
+    substitution: '/workspaces/\1/deployments/\2/\3\4'
   service: deeploy-logger.deeploy
   timeout_ms: 60000
   add_request_headers:
     x-is-public: 'true'
   cors:
-    origins: 
-    - "https://{{ .Values.host }}"
-    methods: 
-    - POST
-    - GET 
-    - OPTIONS 
-    - PUT
-    - DELETE
-    - HEAD
-    - CONNECT
-    - PATCH
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
     headers:
       - x-kratos-authenticated-identity-id
       - Authorization
@@ -33,14 +33,14 @@ spec:
     credentials: true
 ---
 apiVersion: getambassador.io/v2
-kind:  Mapping
+kind: Mapping
 metadata:
-  name:  deeploy-logger-monitoring
+  name: deeploy-logger-monitoring
   namespace: deeploy
 spec:
   prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(activity|deployments/.*/(activity|performance|errors))'
   prefix_regex: true
-  regex_rewrite: 
+  regex_rewrite:
     pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(activity|deployments/.*/(activity|performance|errors))'
     substitution: '/workspaces/\1/\2'
   service: deeploy-logger.deeploy
@@ -48,17 +48,17 @@ spec:
   add_request_headers:
     x-is-public: 'true'
   cors:
-    origins: 
-    - "https://{{ .Values.host }}"
-    methods: 
-    - POST
-    - GET 
-    - OPTIONS 
-    - PUT
-    - DELETE
-    - HEAD
-    - CONNECT
-    - PATCH
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
     headers:
       - x-kratos-authenticated-identity-id
       - Authorization
@@ -76,10 +76,10 @@ spec:
   rewrite: '/v2/logs/swagger'
   service: deeploy-logger.deeploy
   add_request_headers:
-    x-is-public: "true"
+    x-is-public: 'true'
   cors:
     origins:
-      - "https://{{ .Values.host }}"
+      - 'https://{{ .Values.host }}'
     methods:
       - POST
       - GET

@@ -9,15 +9,17 @@ A guide for the installation of Deeploy.
 - [Table of Contents](#table-of-contents)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-    - [1. Structure the database](#1-structure-the-database)
-    - [2. Deploy the Deeploy stack](#2-deploy-the-deeploy-stack)
-        - [1. Istio](#1-istio)
-        - [2. Knative](#2-knative)
-        - [3. Cert-manager](#3-cert-manager)
-        - [4. Deeploy stack](#4-deeploy-stack)
+  - [1. Structure the database](#1-structure-the-database)
+  - [2. Deploy the Deeploy stack](#2-deploy-the-deeploy-stack)
+    - [1. Istio](#1-istio)
+    - [2. Knative](#2-knative)
+    - [3. Cert-manager](#3-cert-manager)
+    - [4. Deeploy stack](#4-deeploy-stack)
+      - [1. Configure the installation](#1-configure-the-installation)
+      - [2. Install](#2-install)
 - [Troubelshooting](#troubelshooting)
+  - [`Permission Denied` errors on GKE](#permission-denied-errors-on-gke)
 - [FAQ](#faq)
-    - [Helm](#helm)
 
 ## Prerequisites
 
@@ -51,6 +53,7 @@ A guide for the installation of Deeploy.
 5. A remote storage bucket (Optional, see [Remote S3](#remote-s3)
     1. An AWS S3 bucket & AWS sericeaccount access keys with read/write access to the bucket.
     2. A Google Cloud Storage bucket & GCP serviceaccount with read/write access to the bucket.
+6. An email server. The email server is required to send registration invitation to Deeploy. This is also used to create the initial admin account on Deeploy.
 
 ## Installation
 ### 1. Structure the database
@@ -158,7 +161,8 @@ __Deeploy General Values:__
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `host` | the hostname on which you will be running deeploy | `""` |
-| `deeployLicenseKey` | the supplied Deeploy license key | `""` |
+| `license.type` | The type of license. Either "AWS" or "DEEPLOY" | `"AWS"` |
+| `license.deeployLicenseKey` | if the license type is "DEEPLOY", this is the supplied Deeploy license key | `""` |
 
 
 __Deeploy Image Values:__
@@ -228,6 +232,9 @@ __Deeploy Security Values:__
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `security.tls.enabled` | whether to enable TLS | `true` |
+| `security.adminCredentials.firstName` | first name of the main admin user | `""` |
+| `security.adminCredentials.lastName` | last name of the main admin user | `""` |
+| `security.adminCredentials.email` | email of the main admin user | `""` |
 
 ##### 2. Install
 

@@ -16,6 +16,7 @@ spec:
         app: deeploy-authorization
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/authorization/configMap.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/authorization/configSecret.yml") . | sha256sum }}
     spec:
       containers:
@@ -43,6 +44,8 @@ spec:
           envFrom:
             - secretRef:
                 name: authorization
+            - secretRef:
+                name: general-config
             - configMapRef:
                 name: authorization
           readinessProbe:

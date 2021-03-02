@@ -16,6 +16,7 @@ spec:
         app: deeploy-user
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/user/configMap.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
         - name: deeploy-user
@@ -52,6 +53,10 @@ spec:
           ports:
             - containerPort: 80
           envFrom:
+            - secretRef:
+                name: general-config
+            - secretRef:
+                name: user
             - configMapRef:
                 name: user
           readinessProbe:

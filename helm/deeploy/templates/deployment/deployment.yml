@@ -17,6 +17,7 @@ spec:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/deployment/configMap.yml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/deployment/configSecret.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
         - name: deeploy-deployment
@@ -55,6 +56,8 @@ spec:
           envFrom:
             - secretRef:
                 name: deployment
+            - secretRef:
+                name: general-config
             - configMapRef:
                 name: deployment
           readinessProbe:

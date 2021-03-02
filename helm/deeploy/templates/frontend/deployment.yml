@@ -17,6 +17,7 @@ spec:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/frontend/configMap.yml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/frontend/configSecret.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
         - name: frontend
@@ -31,6 +32,8 @@ spec:
               containerPort: 80
               protocol: TCP
           envFrom:
+            - secretRef:
+                name: general-config
             - configMapRef:
                 name: frontend
           volumeMounts:

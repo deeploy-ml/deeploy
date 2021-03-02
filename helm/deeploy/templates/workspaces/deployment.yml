@@ -17,6 +17,7 @@ spec:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/workspaces/configMap.yml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/workspaces/configSecret.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
         - name: deeploy-workspaces
@@ -54,6 +55,8 @@ spec:
             - containerPort: 80
           envFrom:
             - secretRef:
+                name: general-config
+            - secretRef:
                 name: workspaces
             - configMapRef:
                 name: workspaces
@@ -88,6 +91,8 @@ spec:
           image: "deeploy-workspaces"
           imagePullPolicy: Always
           envFrom:
+            - secretRef:
+                name: general-config
             - secretRef:
                 name: workspaces
             - configMapRef:

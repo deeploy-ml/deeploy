@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: general-config
+    namespace: deeploy
+type: Opaque
+stringData:
+    LICENSE_TYPE: {{ .Values.license.type | quote }}
+    {{ if not (eq .Values.license.type "AWS") -}}
+    DEEPLOY_LICENSE_KEY: {{ .Values.license.deeployLicenseKey | quote }}
+    {{- else -}}
+    AWS_DEFAULT_REGION: us-east-1
+    {{- end }}
