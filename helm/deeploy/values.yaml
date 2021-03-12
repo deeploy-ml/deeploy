@@ -4,7 +4,7 @@ devMode: false
 images:
   registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com
   path: /deeploy
-  tag: '1.6.0'
+  tag: '1.7.0'
   username:
   password:
 

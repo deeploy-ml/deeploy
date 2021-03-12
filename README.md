@@ -23,7 +23,7 @@ A guide for the installation of Deeploy.
 
 ## Prerequisites
 
-1. Kubernetes cluster version 1.16.13+
+1. Kubernetes cluster version >=1.16.13, <1.17.0
     The **minimal hardware requirements**, spread out over all the nodes, are as follows
     - 3 (v)CPU
     - 6 GB RAM
@@ -40,7 +40,7 @@ A guide for the installation of Deeploy.
     This way, when users deploy models without enough resources available on the cluster, new nodes can be spawned to take on the workload.
 
 2. Helm v3 installed.
-3. Postgres database for use by the microservices. The database should be reachable from the kubernetes nodes.
+3. Postgres database for use by the microservices. The database should be reachable from the kubernetes nodes. Also, Deeploy currently requires the postgres user used by Deeploy to be a super user.
 4. A (sub)domain which you control. In order to automatically generate TLS certificates using cert-manager, the DNS provider for this domain should be one of:
     - ACMEDNS
     - Akamai
@@ -182,7 +182,7 @@ __Deeploy Database Values:__
 | --- | --- | --- |
 | `database.host` | the hostname of the database server | `""` |
 | `database.port` | the port for use of the database server | `5432` |
-| `database.username` | the username to access the database | `""` |
+| `database.username` | the username to access the database. **Note**: this user needs to be a superuser | `""` |
 | `database.password` | the password to access the database server | `""` |
 
 
