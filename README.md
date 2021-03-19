@@ -268,4 +268,8 @@ Create first admin user.
 
 When running on GKE (Google Kubernetes Engine), you may encounter a ‘permission denied’ error when creating some of the resources. This is a nuance of the way GKE handles RBAC and IAM permissions, and as such you should ‘elevate’ your own privileges to that of a ‘cluster-admin’ before running the above commands. If you have already run the above commands, you should run them again after elevating your permissions.
 
+### Istio error
+
+The current Istio version 1.3.8 could throw an error when using the commands above. Make sure to check this git hub isse: https://github.com/istio/istio/pull/22295 in that case.
+
 ## FAQ
