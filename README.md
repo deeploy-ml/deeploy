@@ -73,8 +73,8 @@ Make sure that the username and password for all of these databases are the same
 
 ### 2. Deploy the Deeploy stack
 
-We assume that you now have the infrastructure as defined in [Prerequisites](#prerequisites). From here we continue deploying the Deeploy stack. 
-The installation steps assume you are in the folder `deeploy/install`.
+We assume that you now have the infrastructure as defined in [Prerequisites](#prerequisites). From here we continue deploying the Deeploy stack.
+Make sure you are in the `deeploy` root folder.
 
 Create all the Deeploy namespaces in kubernetes.
 ```bash
