@@ -13,3 +13,9 @@
 {{- define "frontendEnv"}}
 {{- printf "(function(window) {\n  window.__env = window.__env || {};\n  window.__env.production = true;\n  window.__env.repositoryServiceURL = 'https://api.%s/v2';\n  window.__env.introspectorServiceUrl = 'https://api.%s/v2';\n  window.__env.authorizationServiceUrl = 'https://api.%s/v2';\n  window.__env.workspaceServiceURL = 'https://api.%s/v2';\n  window.__env.kratosURL = 'https://api.%s/v1/auth';\n  window.__env.deploymentServiceURL = 'https://api.%s/v2';\n  window.__env.userServiceURL = 'https://api.%s/v2';\n  window.__env.loggerServiceURL = 'https://api.%s/v2';\n  window.__env.docsServiceURL = 'https://docs.%s/';\n  window.__env.tokenServiceURL = 'https://api.%s/v2';\n})(this);\n" .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host | quote }}
 {{- end }}
+{{- define "awsExtension" }}
+{{- if eq .Values.license.type "AWS" -}}
+-gn2zuq2nps5uriwzx00ooeto
+{{- else -}}
+{{- end -}}
+{{- end }}

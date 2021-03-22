@@ -20,7 +20,7 @@ spec:
       containers:
         - name: deeploy-manual
           {{ if not .Values.devMode -}}
-          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/manual:{{ .Values.images.tag }}"
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/manual{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
           {{- else -}}
           image: "deeploy-manual"
           {{- end }}

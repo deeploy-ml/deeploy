@@ -22,7 +22,7 @@ spec:
       containers:
         - name: deeploy-token
           {{ if not .Values.devMode -}}
-          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy:{{ .Values.images.tag }}"
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
           command:
             - "/bin/sh"
             - "./start.sh"

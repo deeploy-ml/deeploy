@@ -21,7 +21,7 @@ spec:
       containers:
       - name: deeploy-authenticator
         {{ if not .Values.devMode -}}
-        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/authenticator:{{ .Values.images.tag }}"
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/authenticator{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
         {{- else -}}
         image: "deeploy-authenticator"
         {{- end }}

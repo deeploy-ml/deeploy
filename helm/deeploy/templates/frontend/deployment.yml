@@ -22,7 +22,7 @@ spec:
       containers:
         - name: frontend
           {{ if not .Values.devMode -}}
-          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/frontend:{{ .Values.images.tag }}"
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/frontend{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
           {{- else -}}
           image: "deeploy-frontend"
           {{- end }}

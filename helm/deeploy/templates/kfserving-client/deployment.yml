@@ -24,7 +24,7 @@ spec:
       containers:
       - name: deeploy-kfserving
         {{ if not .Values.devMode -}}
-        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/kfserving:{{ .Values.images.tag }}"
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/kfserving{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
         {{- else -}}
         image: "deeploy-kfserving"
         {{- end }}
