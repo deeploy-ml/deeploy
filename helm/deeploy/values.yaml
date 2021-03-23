@@ -4,7 +4,7 @@ devMode: false
 images:
   registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com
   path: /deeploy
-  tag: '1.7.1'
+  tag: '1.7.2'
   username:
   password:
 
@@ -13,6 +13,7 @@ host:
 license:
   # 'AWS' or 'DEEPLOY'
   type: AWS
+  availabilityZone: eu-central-1
   deeployLicenseKey:
 
 email:

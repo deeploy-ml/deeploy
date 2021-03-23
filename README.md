@@ -163,6 +163,7 @@ __Deeploy General Values:__
 | `host` | the hostname on which you will be running deeploy | `""` |
 | `license.type` | The type of license. Either "AWS" or "DEEPLOY" | `"AWS"` |
 | `license.deeployLicenseKey` | if the license type is "DEEPLOY", this is the supplied Deeploy license key | `""` |
+| `license.availabilityZone` | if the license type is "AWS", this is the region where your cluster resides | `"eu-central-1"` |
 
 
 __Deeploy Image Values:__

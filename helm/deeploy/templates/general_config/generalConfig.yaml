@@ -9,5 +9,5 @@ stringData:
     {{ if not (eq .Values.license.type "AWS") -}}
     DEEPLOY_LICENSE_KEY: {{ .Values.license.deeployLicenseKey | quote }}
     {{- else -}}
-    AWS_DEFAULT_REGION: us-east-1
+    AWS_DEFAULT_REGION: {{ .Values.license.availabilityZone | quote }}
     {{- end }}
