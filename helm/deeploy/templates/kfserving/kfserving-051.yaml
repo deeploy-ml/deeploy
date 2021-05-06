@@ -2,14 +2,17 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
     cert-manager.io/inject-ca-from: kfserving-system/serving-cert
+  creationTimestamp: null
   name: inferenceservice.serving.kubeflow.org
 webhooks:
 - clientConfig:
+    caBundle: Cg==
     service:
       name: kfserving-webhook-server-service
       namespace: kfserving-system
-      path: /mutate-inferenceservices
+      path: /mutate-serving-kubeflow-org-v1alpha2-inferenceservice
   failurePolicy: Fail
   name: inferenceservice.kfserving-webhook-server.defaulter
   rules:
@@ -23,6 +26,25 @@ webhooks:
     resources:
     - inferenceservices
 - clientConfig:
+    caBundle: Cg==
+    service:
+      name: kfserving-webhook-server-service
+      namespace: kfserving-system
+      path: /mutate-serving-kubeflow-org-v1beta1-inferenceservice
+  failurePolicy: Fail
+  name: inferenceservice.kfserving-webhook-server.v1beta1.defaulter
+  rules:
+  - apiGroups:
+    - serving.kubeflow.org
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - inferenceservices
+- clientConfig:
+    caBundle: Cg==
     service:
       name: kfserving-webhook-server-service
       namespace: kfserving-system
@@ -84,6 +106,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
   name: kfserving-manager-role
 rules:
 - apiGroups:
@@ -104,8 +127,10 @@ rules:
   resources:
   - configmaps
   verbs:
+  - create
   - get
   - list
+  - update
   - watch
 - apiGroups:
   - ""
@@ -174,6 +199,18 @@ rules:
 - apiGroups:
   - networking.istio.io
   resources:
+  - virtualservices/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.istio.io
+  resources:
   - virtualservices/status
   verbs:
   - get
@@ -194,6 +231,18 @@ rules:
 - apiGroups:
   - serving.knative.dev
   resources:
+  - services/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - serving.knative.dev
+  resources:
   - services/status
   verbs:
   - get
@@ -203,6 +252,7 @@ rules:
   - serving.kubeflow.org
   resources:
   - inferenceservices
+  - inferenceservices/finalizers
   verbs:
   - create
   - delete
@@ -215,6 +265,26 @@ rules:
   - serving.kubeflow.org
   resources:
   - inferenceservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - serving.kubeflow.org
+  resources:
+  - trainedmodels
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - serving.kubeflow.org
+  resources:
+  - trainedmodels/status
   verbs:
   - get
   - patch
@@ -279,94 +349,21 @@ subjects:
   namespace: kfserving-system
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: inferenceservice-config
-  namespace: kfserving-system
 data:
-  predictors: |-
+  agent: |-
     {
-        "tensorflow": {
-            "image": "tensorflow/serving",
-            "defaultImageVersion": "1.14.0",
-            "defaultGpuImageVersion": "1.14.0-gpu",
-            "supportedFrameworks": [
-              "tensorflow"
-            ],
-            "multiModelServer": "true"
-        },
-        "onnx": {
-            "image": "mcr.microsoft.com/onnxruntime/server",
-            "defaultImageVersion": "v1.0.0",
-            "supportedFrameworks": [
-              "onnx"
-            ],
-            "multiModelServer": "false"
-        },
-        "sklearn": {
-            "image": "deeployml/sklearnserver",
-            "defaultImageVersion": "v0.4.0-deeploy",
-            "supportedFrameworks": [
-              "sklearn"
-            ],
-            "defaultMethod": "predict",
-            "allowedMethods": [
-              "predict",
-              "predict_proba"
-             ],
-            "multiModelServer": "false"
-        },
-        "xgboost": {
-            "image": "deeployml/xgbserver",
-            "defaultImageVersion": "v0.4.0-deeploy",
-            "supportedFrameworks": [
-              "xgboost"
-            ],
-            "defaultMethod": "predict",
-            "allowedMethods": [
-              "predict",
-              "predict_proba"
-             ],
-            "multiModelServer": "false"
-        },
-        "pytorch": {
-            "image": "gcr.io/kfserving/pytorchserver",
-            "defaultImageVersion": "v0.4.0",
-            "defaultGpuImageVersion": "v0.4.0-gpu",
-            "supportedFrameworks": [
-              "pytorch"
-            ],
-            "multiModelServer": "false"
-        },
-        "triton": {
-            "image": "nvcr.io/nvidia/tritonserver",
-            "defaultImageVersion": "20.03-py3",
-            "supportedFrameworks": [
-              "tensorrt",
-              "tensorflow",
-              "onnx",
-              "pytorch",
-              "caffe2"
-            ],
-            "multiModelServer": "true"
-        }
-    }
-  transformers: |-
-    {
-    }
-  explainers: |-
-    {
-        "alibi": {
-            "image" : "deeployml/alibi-explainer",
-            "defaultImageVersion": "v0.4.0-deeploy"
-        }
-    }
-  storageInitializer: |-
-    {
-        "image" : "gcr.io/kfserving/storage-initializer:v0.4.0",
+        "image" : "kfserving/agent:v0.5.1",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
+        "cpuLimit": "1"
+    }
+  batcher: |-
+    {
+        "image" : "kfserving/agent:v0.5.1",
+        "memoryRequest": "1Gi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "1",
         "cpuLimit": "1"
     }
   credentials: |-
@@ -379,28 +376,165 @@ data:
            "s3SecretAccessKeyName": "secretkey"
        }
     }
+  explainers: |-
+    {
+        "alibi": {
+            "image" : "deeployml/alibi-explainer",
+            "defaultImageVersion": "v0.5.1-deeploy"
+        },
+        "aix": {
+            "image" : "kfserving/aix-explainer",
+            "defaultImageVersion": "v0.5.1"
+        },
+        "art": {
+            "image" : "kfserving/art-explainer",
+            "defaultImageVersion": "v0.5.1"
+        }
+    }
   ingress: |-
     {
         "ingressGateway" : "knative-ingress-gateway.knative-serving",
-        "ingressService" : "istio-ingressgateway.istio-system.svc.cluster.local"
+        "ingressService" : "istio-ingressgateway.istio-system.svc.cluster.local",
+        "localGateway" : "cluster-local-gateway.knative-serving",
+        "localGatewayService" : "cluster-local-gateway.istio-system.svc.cluster.local"
     }
   logger: |-
     {
-        "image" : "gcr.io/kfserving/logger:v0.4.0",
+        "image" : "kfserving/agent:v0.5.1",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
         "cpuLimit": "1",
         "defaultUrl": "http://default-broker"
     }
-  batcher: |-
+  predictors: |-
     {
-        "image" : "gcr.io/kfserving/batcher:v0.4.0",
-        "memoryRequest": "1Gi",
+        "tensorflow": {
+            "image": "tensorflow/serving",
+            "defaultImageVersion": "1.14.0",
+            "defaultGpuImageVersion": "1.14.0-gpu",
+            "defaultTimeout": "60",
+            "supportedFrameworks": [
+              "tensorflow"
+            ],
+            "multiModelServer": false
+        },
+        "onnx": {
+            "image": "mcr.microsoft.com/onnxruntime/server",
+            "defaultImageVersion": "v1.0.0",
+            "supportedFrameworks": [
+              "onnx"
+            ],
+            "multiModelServer": false
+        },
+        "sklearn": {
+          "v1": {
+            "image": "gcr.io/kfserving/sklearnserver",
+            "defaultImageVersion": "v0.5.1",
+            "supportedFrameworks": [
+              "sklearn"
+            ],
+            "multiModelServer": false
+          },
+          "v2": {
+            "image": "docker.io/seldonio/mlserver",
+            "defaultImageVersion": "0.2.1",
+            "supportedFrameworks": [
+              "sklearn"
+            ],
+            "multiModelServer": false
+          }
+        },
+        "xgboost": {
+          "v1": {
+            "image": "gcr.io/kfserving/xgbserver",
+            "defaultImageVersion": "v0.5.1",
+            "supportedFrameworks": [
+              "xgboost"
+            ],
+            "multiModelServer": false
+          },
+          "v2": {
+            "image": "docker.io/seldonio/mlserver",
+            "defaultImageVersion": "0.2.1",
+            "supportedFrameworks": [
+              "xgboost"
+            ],
+            "multiModelServer": false
+          }
+        },
+        "pytorch": {
+          "v1" : {
+            "image": "gcr.io/kfserving/pytorchserver",
+            "defaultImageVersion": "v0.5.1",
+            "defaultGpuImageVersion": "v0.5.1-gpu",
+            "supportedFrameworks": [
+              "pytorch"
+            ],
+            "multiModelServer": false
+          },
+          "v2" : {
+            "image": "kfserving/torchserve-kfs",
+            "defaultImageVersion": "0.3.0",
+            "defaultGpuImageVersion": "0.3.0-gpu",
+            "supportedFrameworks": [
+              "pytorch"
+            ],
+            "multiModelServer": false
+          }
+        },
+        "triton": {
+            "image": "nvcr.io/nvidia/tritonserver",
+            "defaultImageVersion": "20.08-py3",
+            "supportedFrameworks": [
+              "tensorrt",
+              "tensorflow",
+              "onnx",
+              "pytorch",
+              "caffe2"
+            ],
+            "multiModelServer": false
+        },
+        "pmml": {
+            "image": "kfserving/pmmlserver",
+            "defaultImageVersion": "v0.5.1",
+            "supportedFrameworks": [
+              "pmml"
+            ],
+            "multiModelServer": false
+        },
+        "lightgbm": {
+            "image": "kfserving/lgbserver",
+            "defaultImageVersion": "v0.5.1",
+            "supportedFrameworks": [
+              "lightgbm"
+            ],
+            "multiModelServer": false
+        }
+    }
+  storageInitializer: |-
+    {
+        "image" : "gcr.io/kfserving/storage-initializer:v0.5.1",
+        "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
-        "cpuRequest": "1",
+        "cpuRequest": "100m",
         "cpuLimit": "1"
     }
+  transformers: |-
+    {
+    }
+kind: ConfigMap
+metadata:
+  name: inferenceservice-config
+  namespace: kfserving-system
+---
+apiVersion: v1
+data:
+  ingressGateway: '"knative-ingress-gateway.knative-serving",'
+kind: ConfigMap
+metadata:
+  name: kfserving-config
+  namespace: kfserving-system
 ---
 apiVersion: v1
 kind: Secret
@@ -416,7 +550,7 @@ metadata:
     prometheus.io/scheme: https
     prometheus.io/scrape: "true"
   labels:
-    control-plane: controller-manager
+    control-plane: kfserving-controller-manager
     controller-tools.k8s.io: "1.0"
   name: kfserving-controller-manager-metrics-service
   namespace: kfserving-system
@@ -426,7 +560,7 @@ spec:
     port: 8443
     targetPort: https
   selector:
-    control-plane: controller-manager
+    control-plane: kfserving-controller-manager
     controller-tools.k8s.io: "1.0"
 ---
 apiVersion: v1
@@ -452,7 +586,7 @@ metadata:
 spec:
   ports:
   - port: 443
-    targetPort: 443
+    targetPort: webhook-server
   selector:
     control-plane: kfserving-controller-manager
 ---
@@ -498,11 +632,11 @@ spec:
               fieldPath: metadata.namespace
         - name: SECRET_NAME
           value: kfserving-webhook-server-cert
-        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/kfserving-controller:v0.4.0-deeploy"
+        image: gcr.io/kfserving/kfserving-controller:v0.5.1
         imagePullPolicy: Always
         name: manager
         ports:
-        - containerPort: 443
+        - containerPort: 9443
           name: webhook-server
           protocol: TCP
         resources:
@@ -522,8 +656,20 @@ spec:
         secret:
           defaultMode: 420
           secretName: kfserving-webhook-server-cert
-      imagePullSecrets:
-        - name: image-registry
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: serving-cert
+  namespace: kfserving-system
+spec:
+  commonName: kfserving-webhook-server-service.kfserving-system.svc
+  dnsNames:
+  - kfserving-webhook-server-service.kfserving-system.svc
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: kfserving-webhook-server-cert
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
@@ -533,33 +679,21 @@ metadata:
 spec:
   selfSigned: {}
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: serving-cert  # this name should match the one appeared in kustomizeconfig.yaml
-  namespace: kfserving-system
-spec:
-  # $(SERVICE_NAME) and $(SERVICE_NAMESPACE) will be substituted by kustomize
-  commonName: kfserving-webhook-server-service.kfserving-system.svc
-  dnsNames:
-    - kfserving-webhook-server-service.kfserving-system.svc
-  issuerRef:
-    kind: Issuer
-    name: selfsigned-issuer
-  secretName: kfserving-webhook-server-cert # this secret will not be prefixed, since it's not managed by kustomize
----
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
     cert-manager.io/inject-ca-from: kfserving-system/serving-cert
+  creationTimestamp: null
   name: inferenceservice.serving.kubeflow.org
 webhooks:
 - clientConfig:
+    caBundle: Cg==
     service:
       name: kfserving-webhook-server-service
       namespace: kfserving-system
-      path: /validate-inferenceservices
+      path: /validate-serving-kubeflow-org-v1alpha2-inferenceservice
   failurePolicy: Fail
   name: inferenceservice.kfserving-webhook-server.validator
   rules:
@@ -572,3 +706,49 @@ webhooks:
     - UPDATE
     resources:
     - inferenceservices
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kfserving-webhook-server-service
+      namespace: kfserving-system
+      path: /validate-serving-kubeflow-org-v1beta1-inferenceservice
+  failurePolicy: Fail
+  name: inferenceservice.kfserving-webhook-server.v1beta1.validator
+  rules:
+  - apiGroups:
+    - serving.kubeflow.org
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - inferenceservices
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+    cert-manager.io/inject-ca-from: kfserving-system/serving-cert
+  creationTimestamp: null
+  name: trainedmodel.serving.kubeflow.org
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kfserving-webhook-server-service
+      namespace: kfserving-system
+      path: /validate-serving-kubeflow-org-v1alpha1-trainedmodel
+  failurePolicy: Fail
+  name: trainedmodel.kfserving-webhook-server.validator
+  rules:
+  - apiGroups:
+    - serving.kubeflow.org
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - trainedmodels

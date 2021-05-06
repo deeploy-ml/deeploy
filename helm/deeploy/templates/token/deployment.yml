@@ -16,8 +16,8 @@ spec:
         app: deeploy-token
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/token/configMap.yml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/token/configSecret.yml") . | sha256sum }}
         checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
+        checksum/database: {{ include (print $.Template.BasePath "/db/secret.yaml") . | sha256sum }}
     spec:
       containers:
         - name: deeploy-token
@@ -57,7 +57,7 @@ spec:
             - secretRef:
                 name: general-config
             - secretRef:
-                name: token
+                name: database
             - configMapRef:
                 name: token
           readinessProbe:

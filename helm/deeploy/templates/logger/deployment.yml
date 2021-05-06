@@ -16,9 +16,9 @@ spec:
         app: deeploy-logger
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/logger/configMap.yml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/logger/configSecret.yml") . | sha256sum }}
         checksum/rabbitmq: {{ include (print $.Template.BasePath "/rabbitmq/secret.yaml") . | sha256sum }}
         checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
+        checksum/database: {{ include (print $.Template.BasePath "/db/secret.yaml") . | sha256sum }}
     spec:
       containers:
         - name: deeploy-logger
@@ -58,7 +58,7 @@ spec:
             - secretRef:
                 name: general-config
             - secretRef:
-                name: logger
+                name: database
             - configMapRef:
                 name: logger
           readinessProbe:

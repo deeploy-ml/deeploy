@@ -1,33 +1,6 @@
 apiVersion: getambassador.io/v2
 kind:  Mapping
 metadata:
-  name:  deeploy-introspector-v1
-  namespace: deeploy
-spec:
-  prefix: /v1/introspector
-  service: deeploy-introspector.deeploy
-  rewrite: /introspector
-  timeout_ms: 60000
-  add_request_headers:
-    x-is-public: 'true'
-  cors:
-    origins: 
-    - "https://{{ .Values.host }}"
-    methods: 
-    - POST
-    - GET 
-    - OPTIONS 
-    - PUT
-    - DELETE
-    - HEAD
-    - CONNECT
-    - PATCH
-    headers: "*"
-    credentials: true
----
-apiVersion: getambassador.io/v2
-kind:  Mapping
-metadata:
   name:  deeploy-introspector-v2
   namespace: deeploy
 spec:
@@ -52,7 +25,11 @@ spec:
     - HEAD
     - CONNECT
     - PATCH
-    headers: "*"
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
     credentials: true
 ---
 apiVersion: getambassador.io/v2

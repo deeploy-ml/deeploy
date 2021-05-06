@@ -4,18 +4,52 @@ metadata:
   name: deeploy-deployment
   namespace: deeploy
 spec:
-  prefix: '/v2/(deployments|workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})))'
+  prefix: '/v2/(deployments|workspaces/.*/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})($|/versions)($|/.*)))'
   prefix_regex: true
-  regex_rewrite: 
+  regex_rewrite:
     pattern: '/v2/(deployments|workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})))'
     substitution: '/\1'
   service: deeploy-deployment.deeploy
   add_request_headers:
-    x-is-public: "true"
+    x-is-public: 'true'
   timeout_ms: 60000
   cors:
     origins:
-      - "https://{{ .Values.host }}"
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-deployment-versions
+  namespace: deeploy
+spec:
+  prefix: '/v2/(.*/versions($|/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+  prefix_regex: true
+  regex_rewrite:
+    pattern: '/v2/(.*/versions($|/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+    substitution: '/\1'
+  service: deeploy-deployment.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  timeout_ms: 60000
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
     methods:
       - POST
       - GET
@@ -43,12 +77,12 @@ spec:
   service: deeploy-deployment.deeploy
   use_websocket: true
   add_request_headers:
-    x-is-public: "true"
+    x-is-public: 'true'
   timeout_ms: 60000
   bypass_auth: true
   cors:
     origins:
-      - "https://{{ .Values.host }}"
+      - 'https://{{ .Values.host }}'
     methods:
       - POST
       - GET
@@ -75,10 +109,10 @@ spec:
   rewrite: '/v2/deployments/swagger'
   service: deeploy-deployment.deeploy
   add_request_headers:
-    x-is-public: "true"
+    x-is-public: 'true'
   cors:
     origins:
-      - "https://{{ .Values.host }}"
+      - 'https://{{ .Values.host }}'
     methods:
       - POST
       - GET

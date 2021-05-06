@@ -16,8 +16,8 @@ spec:
         app: deeploy-introspector
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/introspector/configMap.yml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/introspector/configSecret.yml") . | sha256sum }}
         checksum/rabbitmq: {{ include (print $.Template.BasePath "/rabbitmq/secret.yaml") . | sha256sum }}
+        checksum/database: {{ include (print $.Template.BasePath "/db/secret.yaml") . | sha256sum }}
         checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
@@ -56,9 +56,9 @@ spec:
             {{- end }}
           envFrom:
             - secretRef:
-                name: introspector
-            - secretRef:
                 name: general-config
+            - secretRef:
+                name: database
             - configMapRef:
                 name: introspector
           readinessProbe:

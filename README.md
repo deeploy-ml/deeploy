@@ -39,9 +39,11 @@ A guide for the installation of Deeploy.
     **NOTE**: It is advised that you turn on autoscaling on this cluster. 
     This way, when users deploy models without enough resources available on the cluster, new nodes can be spawned to take on the workload.
 
-2. Helm v3 installed.
-3. Postgres database for use by the microservices. The database should be reachable from the kubernetes nodes. Also, Deeploy currently requires the postgres user used by Deeploy to be a super user.
-4. A (sub)domain which you control. In order to automatically generate TLS certificates using cert-manager, the DNS provider for this domain should be one of:
+2. `kubectl` installed. Due to [a performance issue applying deeply nested CRDs](https://github.com/kubernetes/kubernetes/issues/91615), please ensure that your `kubectl` version
+fits into one of the following categories to ensure that you have the fix: `>=1.16.14,<1.17.0` or `>=1.17.11,<1.18.0` or `>=1.18.8`.
+3. Helm v3 installed.
+4. Postgres database for use by the microservices. The database should be reachable from the kubernetes nodes. Also, Deeploy currently requires the postgres user used by Deeploy to be a super user.
+5. A (sub)domain which you control. In order to automatically generate TLS certificates using cert-manager, the DNS provider for this domain should be one of:
     - ACMEDNS
     - Akamai
     - AzureDNS
@@ -50,24 +52,18 @@ A guide for the installation of Deeploy.
     - Route53
     - DigitalOcean
     - RFC2136
-5. A remote storage bucket (Optional, see [Remote S3](#remote-s3)
+6. A remote storage bucket (Optional, see [Remote S3](#remote-s3)
     1. An AWS S3 bucket & AWS sericeaccount access keys with read/write access to the bucket.
     2. A Google Cloud Storage bucket & GCP serviceaccount with read/write access to the bucket.
-6. An email server. The email server is required to send registration invitation to Deeploy. This is also used to create the initial admin account on Deeploy.
+7. An email server. The email server is required to send registration invitation to Deeploy. This is also used to create the initial admin account on Deeploy.
 
 ## Installation
 ### 1. Structure the database
 
 On the AWS RDS Postgres database server, create a seperate database for every microservice that needs one. Currently, these databases are:
 
-1. `deeploy_companies`
-2. `deeploy_deployment`
-3. `deeploy_introspector`
-4. `deeploy_logs`
-5. `deeploy_repository`
-6. `deeploy_projects`
-7. `deeploy_token`
-8. `deeploy_kratos`
+1. `deeploy`
+2. `deeploy_kratos`
 
 Make sure that the username and password for all of these databases are the same. The user should have all rights on the database.
 
@@ -83,18 +79,18 @@ $ kubectl apply -f namespaces/
 
 #### 1. Istio
 
-> Current Istio installation instructions are based on `istio version 1.3.8` that should work on common cloud platforms. Always double check [platform specific installation requirements](https://istio.io/docs/setup/platform-setup/) and [the istio helm installation instructions](https://istio.io/docs/setup/install/helm/) to check the latest installation instructions.
+> Current Istio installation instructions are based on `istio version 1.4.10` that should work on common cloud platforms. Always double check [platform specific installation requirements](https://istio.io/docs/setup/platform-setup/) and [the istio helm installation instructions](https://istio.io/docs/setup/install/helm/) to check the latest installation instructions.
 
 **Installation steps:**
 
 1. Download the Istio release:
     ```bash
-    $ curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.3.8 sh -
+    $ curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 sh -
     ```
 
 2. Install Istio CRD's:
     ```bash
-    $ for i in ./istio-1.3.8/install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
+    $ for i in ./istio-1.4.10/install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
     ```
 
 3. Install Istio:
@@ -103,7 +99,7 @@ $ kubectl apply -f namespaces/
     # Based on install/kubernetes/helm/istio/values-istio-minimal.yaml
     helm template --namespace=istio-system \
     -f ./istio/values.yaml \
-    istio-1.3.8/install/kubernetes/helm/istio \
+    istio-1.4.10/install/kubernetes/helm/istio \
     | sed -e "s/custom-gateway/cluster-local-gateway/g" -e "s/customgateway/clusterlocalgateway/g" \
     > ./istio.yaml
 
@@ -136,15 +132,10 @@ For additional information about installing Istio, see the [official website](ht
 
 #### 3. Cert-manager
 
-This step is optional, but recommended. If you do not want to use certmanager, there are two alternatives:
-
-1. **Supply your own certificates**. You would do this by placing the root certificate in the `deeploy-cert` secret, and the wildcard certificate in the `deeploy-wildcard-cert` secret. Both reside in the `istio-system` namespace.
-2. **Run Deeploy without TLS**. If you decide to run Deeploy without terminating TLS on the cluster level, make sure to do it elsewhere. You can turn off TLS by setting `security.tls.enabled` to `false` in the `values.yaml` during installation.
-
-If you choose to use certmanager, follow these steps:
-
 1. [Install cert-manager](https://cert-manager.io/docs/installation/kubernetes/#installing-with-helm).
-2. [Set up auto-renewal through ACME](https://cert-manager.io/docs/configuration/acme/). Make sure to generate two certificates as described above.
+
+
+2. (__Optional__) [Set up auto-renewal through ACME](https://cert-manager.io/docs/configuration/acme/). Only do this if you want to terminate TLS on this cluster. Make sure to generate two certificates as described above.
 
 #### 4. Deeploy stack
 
