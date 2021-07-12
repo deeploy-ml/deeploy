@@ -8,4 +8,3 @@ data:
   DB_SYNCHRONIZE: 'false'
   DB_LOGGING: 'false'
   DB_MIGRATIONS: 'true'
-  DOMAIN: {{ .Values.host | quote }}

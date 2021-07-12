@@ -15,3 +15,4 @@ data:
   STORAGE_TYPE: "gcs"
   {{- end }}
   DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'
+  TOKEN_URL: 'http://deeploy-token.deeploy.svc.cluster.local/'

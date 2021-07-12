@@ -8,7 +8,6 @@ data:
   DB_SYNCHRONIZE: 'false'
   DB_LOGGING: 'false'
   DB_MIGRATIONS: 'true'
-  DOMAIN: {{ .Values.host | quote }}
   TOKEN_URL: 'http://deeploy-token.deeploy.svc.cluster.local/token/'
   REPOSITORY_URL: 'http://deeploy-repository.deeploy.svc.cluster.local/'
   SERVING_URL: 'http://deeploy-kfserving.deeploy.svc.cluster.local/deployments/'

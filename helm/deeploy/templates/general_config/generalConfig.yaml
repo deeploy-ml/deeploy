@@ -5,6 +5,7 @@ metadata:
     namespace: deeploy
 type: Opaque
 stringData:
+    DOMAIN: {{ .Values.host | quote }}
     LICENSE_TYPE: {{ .Values.license.type | quote }}
     {{ if not (eq .Values.license.type "AWS") -}}
     DEEPLOY_LICENSE_KEY: {{ .Values.license.deeployLicenseKey | quote }}

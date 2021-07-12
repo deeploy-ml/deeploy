@@ -8,6 +8,6 @@ data:
   DB_SYNCHRONIZE: "false"
   DB_LOGGING: "false"
   DB_MIGRATIONS: "true"
-  DOMAIN: {{ .Values.host | quote }}
   TOKEN_URL: 'http://deeploy-token.deeploy.svc.cluster.local/token/'
   LOGGER_URL: 'http://deeploy-logger.deeploy.svc.cluster.local/logger/'
+  DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'

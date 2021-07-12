@@ -4,5 +4,6 @@ metadata:
   name: authenticator
   namespace: deeploy
 data:
+  PORT: '3000'
   KRATOS_URI: "http://ory-kratos.deeploy.svc.cluster.local"
   TOKEN_URL: "http://deeploy-token.deeploy.svc.cluster.local"

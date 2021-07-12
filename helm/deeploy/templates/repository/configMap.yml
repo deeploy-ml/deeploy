@@ -8,7 +8,6 @@ data:
   DB_SYNCHRONIZE: 'false'
   DB_LOGGING: 'false'
   DB_MIGRATIONS: 'true'
-  DOMAIN: {{ .Values.host | quote }}
   KRATOS_ADMIN_URL: 'http://ory-kratos.deeploy.svc.cluster.local:8080/'
   WORKSPACES_URL: 'http://deeploy-workspaces.deeploy.svc.cluster.local/workspaces/'
   DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'

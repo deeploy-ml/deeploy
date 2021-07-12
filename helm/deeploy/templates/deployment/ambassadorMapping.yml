@@ -4,10 +4,10 @@ metadata:
   name: deeploy-deployment
   namespace: deeploy
 spec:
-  prefix: '/v2/(deployments|workspaces/.*/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})($|/versions)($|/.*)))'
+  prefix: '/v2/(deployments|workspaces/.*/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})($|/owner)($|/.*)))'
   prefix_regex: true
   regex_rewrite:
-    pattern: '/v2/(deployments|workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})))'
+    pattern: '/v2/(deployments|workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))($|/owner))'
     substitution: '/\1'
   service: deeploy-deployment.deeploy
   add_request_headers:

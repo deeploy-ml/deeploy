@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: deeploy-authenticator
+  name: deeploy-notification
   namespace: deeploy
 spec:
   type: ClusterIP
   ports:
     - port: 80
       targetPort: 3000
-      name: http-deeploy-authenticator
+      name: http-deeploy-notification
   selector:
-    app: deeploy-authenticator
+    app: deeploy-notification

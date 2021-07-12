@@ -21,10 +21,19 @@ spec:
       containers:
       - name: deeploy-authenticator
         {{ if not .Values.devMode -}}
-        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/authenticator{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
+        command:
+            - "/bin/sh"
+            - "./start.sh"
+            - "authenticator"
         {{- else -}}
         image: "deeploy-authenticator"
-        {{- end }}
+          command:
+            - "nest"
+            - "start"
+            - "authenticator"
+            - "--watch"
+          {{- end}}
         imagePullPolicy: Always
         ports:
           - containerPort: 80
@@ -33,5 +42,11 @@ spec:
               name: general-config
           - configMapRef:
               name: authenticator
+        readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 3
       imagePullSecrets:
         - name: image-registry

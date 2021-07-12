@@ -1,0 +1,63 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-notification-v2
+  namespace: deeploy
+spec:
+  prefix: '/v2/users/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(notification-preferences|notifications)($|/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+  prefix_regex: true
+  regex_rewrite:
+    pattern: '/v2/users/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(notification-preferences|notifications)($|/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+    substitution: '/users/\1/\2\3'
+  service: deeploy-notification.deeploy
+  timeout_ms: 60000
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-notification-swagger
+  namespace: deeploy
+spec:
+  prefix: '/v2/notification/swagger'
+  rewrite: '/v2/notification/swagger'
+  service: deeploy-notification.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true

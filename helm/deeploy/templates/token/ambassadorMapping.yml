@@ -67,6 +67,41 @@ spec:
     credentials: true
 ---
 apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
+  name:  deeploy-token-credentials
+  namespace: deeploy
+spec:
+  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/credentials($|/.*)'
+  prefix_regex: true
+  regex_rewrite: 
+    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/credentials($|/.*)'
+    substitution: '/workspaces/\1/credentials\2'
+  service: deeploy-token.deeploy
+  timeout_ms: 10000
+  use_websocket: true 
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins: 
+    - "https://{{ .Values.host }}"
+    methods: 
+    - POST
+    - GET 
+    - OPTIONS
+    - PUT
+    - DELETE
+    - HEAD
+    - CONNECT
+    - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
 kind: Mapping
 metadata:
   name: deeploy-token-swagger

@@ -23,7 +23,7 @@ A guide for the installation of Deeploy.
 
 ## Prerequisites
 
-1. Kubernetes cluster version >=1.16.13, <1.17.0
+1. Kubernetes cluster version >=1.18.16, <1.19.0
     The **minimal hardware requirements**, spread out over all the nodes, are as follows
     - 3 (v)CPU
     - 6 GB RAM
@@ -227,6 +227,9 @@ __Deeploy Security Values:__
 | `security.adminCredentials.firstName` | first name of the main admin user | `""` |
 | `security.adminCredentials.lastName` | last name of the main admin user | `""` |
 | `security.adminCredentials.email` | email of the main admin user | `""` |
+| `security.keyManagement.kms.keyId` | ID of a KMS key used to encrypt/decrypt | `""` |
+| `security.keyManagement.kms.awsAccessKey` | IAM Access Key of an account that has access to the key | `""` |
+| `security.keyManagement.kms.awsSecretKey` | IAM Secret Key of an account that has access to the key | `""` |
 
 ##### 2. Install
 

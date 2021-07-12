@@ -4,11 +4,11 @@ metadata:
   name: deeploy-logger
   namespace: deeploy
 spec:
-  prefix: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(events|logs)($|/.*)'
+  prefix: '/v2/(workspaces/.*/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(events|logs|logCommits)($|/.*))'
   prefix_regex: true
   regex_rewrite:
-    pattern: '/v2/workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(events|logs)($|/.*)'
-    substitution: '/workspaces/\1/deployments/\2/\3\4'
+    pattern: '/v2/(workspaces/.*/deployments/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(events|logs|logCommits)($|/.*))'
+    substitution: '/\1'
   service: deeploy-logger.deeploy
   timeout_ms: 60000
   add_request_headers:
