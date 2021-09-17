@@ -2,7 +2,7 @@
 {{- printf "{\"auths\": {\"%s\": {\"username\": \"%s\",\"password\": \"%s\",\"auth\": \"%s\"}}}" .Values.images.registry .Values.images.username .Values.images.password (printf "%s:%s" .Values.images.username .Values.images.password | b64enc) | b64enc }}
 {{- end }}
 {{- define "swaggerUrls" }}
-{{- printf "[{ url: \"https://api.%s/v2/deployments/swagger-json\", name: \"Deployments\" }, { url: \"https://api.%s/v2/repositories/swagger-json\", name: \"Repositories\" }, { url: \"https://api.%s/v2/workspaces/swagger-json\", name: \"Workspaces\" }, { url: \"https://api.%s/v2/inference/swagger-json\", name: \"Inference\" }, { url: \"https://api.%s/v2/logs/swagger-json\", name: \"Logs\" }, { url: \"https://api.%s/v2/tokens/swagger-json\", name: \"Tokens\" }, { url: \"https://api.%s/v2/users/swagger-json\", name: \"Users\" }]" .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host | quote }}
+{{- printf "[{ url: \"https://api.%s/v2/notification/swagger-json\", name: \"Notifications\" },{ url: \"https://api.%s/v2/core/swagger-json\", name: \"Core\" }, { url: \"https://api.%s/v2/repositories/swagger-json\", name: \"Repositories\" }, { url: \"https://api.%s/v2/workspaces/swagger-json\", name: \"Workspaces\" }, { url: \"https://api.%s/v2/inference/swagger-json\", name: \"Inference\" }, { url: \"https://api.%s/v2/logs/swagger-json\", name: \"Logs\" }, { url: \"https://api.%s/v2/tokens/swagger-json\", name: \"Tokens\" }, { url: \"https://api.%s/v2/users/swagger-json\", name: \"Users\" }]" .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host .Values.host | quote }}
 {{- end }}
 {{- define "minioDomain" }}
 {{- printf "deeploy-minio.deeploy.svc.cluster.local" | quote }}
@@ -18,4 +18,16 @@
 -gn2zuq2nps5uriwzx00ooeto
 {{- else -}}
 {{- end -}}
+{{- end }}
+{{- define "deeployKFServingVersion" }}
+{{- printf "v0.5.1-deeploy-0.2.4" }}
+{{- end }}
+{{- define "accountsHost" }}
+{{- printf "europe-west3-deeploy-accounts-test.cloudfunctions.net" | quote }}
+{{- end }}
+{{- define "accountsTLS" }}
+{{- printf "true" | quote }}
+{{- end }}
+{{- define "accountsPort" }}
+{{- printf "443" | quote }}
 {{- end }}

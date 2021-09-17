@@ -7,6 +7,13 @@ type: Opaque
 stringData:
     DOMAIN: {{ .Values.host | quote }}
     LICENSE_TYPE: {{ .Values.license.type | quote }}
+    USAGE_URL: deeploy-usage.deeploy.svc.cluster.local
+    USAGE_TLS: "false"
+    USAGE_URI: ""
+    USAGE_PORT: "80"
+    LICENSE_URL: {{ template "accountsHost" . }}
+    LICENSE_TLS: {{ template "accountsTLS" . }}
+    LICENSE_PORT: {{ template "accountsPort" . }}
     {{ if not (eq .Values.license.type "AWS") -}}
     DEEPLOY_LICENSE_KEY: {{ .Values.license.deeployLicenseKey | quote }}
     {{- else -}}

@@ -1,0 +1,178 @@
+{{ if .Values.dev.runPreInstall -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: image-registry
+  namespace: deeploy
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-2"
+    "helm.sh/hook-delete-policy": hook-succeeded
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ template "imagePullSecret" . }}
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: deeploy-registration
+  namespace: deeploy
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: namespace-tracker
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded
+rules:
+- verbs:
+    - get
+    - list
+    - watch
+  apiGroups:
+    - ''
+  resources:
+    - namespaces
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: read-namespaces-global
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-delete-policy": hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    name: deeploy-registration
+    namespace: deeploy
+roleRef:
+  kind: ClusterRole
+  name: namespace-tracker
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "deeploy-cluster-registration"
+  namespace: deeploy
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      serviceAccountName: deeploy-registration
+      imagePullSecrets:
+        - name: image-registry
+      containers:
+      - name: pre-install-job
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
+        command:
+          - "/bin/sh"
+          - "./start.sh"
+          - "registration"
+        envFrom:
+          - secretRef:
+              name: registration
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registration
+  namespace: deeploy
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+type: Opaque
+stringData:
+  ACCOUNTS_URL: {{ template "accountsHost" . }}
+  ACCOUNTS_PORT: {{ template "accountsPort" . }}
+  ACCOUNTS_TLS: {{ template "accountsTLS" . }}
+  DOMAIN: {{ .Values.host | quote }}
+  DEEPLOY_LICENSE_KEY: {{ .Values.license.deeployLicenseKey | quote }}
+  DEEPLOY_VERSION: {{ .Values.images.tag | quote }}
+  {{ if (eq .Values.security.keyManagement.kmsType "AWS") -}}
+  KMS_TYPE: "aws"
+  AWS_KMS_KEY_ID: {{ .Values.security.keyManagement.aws.keyId }}
+  AWS_KMS_ACCESS_KEY: {{ .Values.security.keyManagement.aws.accessKey }}
+  AWS_KMS_SECRET_KEY: {{ .Values.security.keyManagement.aws.secretKey }}
+  {{- else if (eq .Values.security.keyManagement.kmsType "AZURE") -}}
+  KMS_TYPE: "azure"
+  AZURE_VAULT_KEY_ID: {{ .Values.security.keyManagement.azure.keyId }}
+  AZURE_VAULT_NAME: {{ .Values.security.keyManagement.azure.vaultName }}
+  AZURE_CLIENT_ID: {{ .Values.security.keyManagement.azure.clientId }}
+  AZURE_CLIENT_SECRET: {{ .Values.security.keyManagement.azure.clientSecret }}
+  AZURE_TENANT_ID: {{ .Values.security.keyManagement.azure.tenantId }}
+  {{- end }}
+  DB_NAME: deeploy
+  DB_HOST: {{ .Values.database.host | quote }}
+  DB_PORT: "5432"
+  DB_USER: {{ .Values.database.username }}
+  DB_PASSWORD: {{ .Values.database.password }}
+  DB_SSL_ENABLED: {{ .Values.database.ssl.enabled | quote }}
+  {{ if .Values.database.ssl.enabled -}}
+  DB_CA: {{ .Values.database.ssl.ca | quote}}
+  {{- end }}
+  DB_SYNCHRONIZE: 'false'
+  DB_LOGGING: 'false'
+  DB_MIGRATIONS: 'true'
+{{- end }}

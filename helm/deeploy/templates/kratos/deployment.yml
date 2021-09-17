@@ -1,105 +1,63 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ory-kratos
+  name: deeploy-kratos
   namespace: deeploy
+  labels:
+    app.kubernetes.io/name: kratos
+    helm.sh/chart: kratos-0.17.0
+    app.kubernetes.io/instance: deeploy
+    app.kubernetes.io/version: "0.6.3-alpha.1"
+    app.kubernetes.io/managed-by: Helm
 spec:
+  progressDeadlineSeconds: 3600
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 30%
+      maxUnavailable: 0
+    type: RollingUpdate
   selector:
     matchLabels:
-      app: ory-kratos
-  strategy:
-    type: RollingUpdate
+      app.kubernetes.io/name: kratos
+      app.kubernetes.io/instance: deeploy
   template:
     metadata:
       labels:
-        app: ory-kratos
+        app.kubernetes.io/name: kratos
+        helm.sh/chart: kratos-0.17.0
+        app.kubernetes.io/instance: deeploy
+        app.kubernetes.io/version: "0.6.3-alpha.1"
+        app.kubernetes.io/managed-by: Helm
+        app: kratos
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/kratos/secret.yaml") . | sha256sum }}
     spec:
-      containers:
-        - name: ory-kratos
-          image: 'oryd/kratos:v0.5.1-sqlite'
-          command:
-            - kratos
-          args:
-            - serve
-            {{ if .Values.devMode -}}
-            - '--dev'
-            {{- end  }}
-          ports:
-            - name: http-public
-              containerPort: 4433
-              protocol: TCP
-            - name: http-admin
-              containerPort: 4434
-              protocol: TCP
-          envFrom:
-            - secretRef:
-                name: ory-kratos
-          resources: {}
-          volumeMounts:
-            - name: configs
-              mountPath: /home/ory/user.schema.json
-              subPath: user.schema.json
-            - name: configs
-              mountPath: /home/ory/.kratos.yaml
-              subPath: kratos-config.yaml
-            - name: templates
-              mountPath: /home/ory/courier/templates/verification/valid/email.body.gotmpl
-              subPath: verification.valid.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/verification/invalid/email.body.gotmpl
-              subPath: verification.invalid.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/recovery/valid/email.body.gotmpl
-              subPath: recovery.valid.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/recovery/invalid/email.body.gotmpl
-              subPath: recovery.invalid.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/verification/valid/email.subject.gotmpl
-              subPath: verification.valid.subject.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/verification/invalid/email.subject.gotmpl
-              subPath: verification.invalid.subject.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/recovery/valid/email.subject.gotmpl
-              subPath: recovery.valid.subject.gotmpl
-            - name: templates
-              mountPath: /home/ory/courier/templates/recovery/invalid/email.subject.gotmpl
-              subPath: recovery.invalid.subject.gotmpl
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: Always
       volumes:
-        - name: configs
+        - name: kratos-config-volume
           secret:
             secretName: ory-kratos
         - name: templates
           configMap:
             name: ory-kratos-templates
+      serviceAccountName: default
       initContainers:
-        - name: ory-kratos-init
-          image: 'oryd/kratos:v0.5.1-sqlite'
-          command:
-            - kratos
-          args:
-            - migrate
-            - sql
-            - '-e'
-            - '--yes'
-          envFrom:
-            - secretRef:
-                name: ory-kratos
-          resources: {}
+        - name: kratos-init
+          image: oryd/kratos:v0.6.3-alpha.1
+          imagePullPolicy: IfNotPresent
+          command: ["kratos"]
+          args: [
+            "migrate",
+            "sql",
+            "-e",
+            "--yes",
+            "--config",
+            "/etc/config/kratos.yaml"
+          ]
           volumeMounts:
-            - name: configs
-              mountPath: /home/ory/customer.schema.json
-              subPath: customer.schema.json
-            - name: configs
-              mountPath: /home/ory/.kratos.yaml
-              subPath: kratos-config.yaml
+            - name: kratos-config-volume
+              mountPath: /etc/config
+              readOnly: true
             - name: templates
               mountPath: /home/ory/courier/templates/verification/valid/email.body.gotmpl
               subPath: verification.valid.gotmpl
@@ -124,6 +82,112 @@ spec:
             - name: templates
               mountPath: /home/ory/courier/templates/recovery/invalid/email.subject.gotmpl
               subPath: recovery.invalid.subject.gotmpl
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/valid/email.body.plaintext.gotmpl
+              subPath: verification.valid.plaintext.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/valid/email.body.plaintext.gotmpl
+              subPath: recovery.valid.plaintext.gotmpl
+          env:
+            - name: DSN
+              valueFrom:
+                secretKeyRef:
+                  name: ory-kratos
+                  key: DSN
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+      containers:        
+        - name: kratos
+          image: oryd/kratos:v0.6.3-alpha.1
           imagePullPolicy: IfNotPresent
+          command: ["kratos"]
+          args: [
+            "serve",
+            "all",
+            "--watch-courier",
+            "--config",
+            "/etc/config/kratos.yaml",
+          ]
+          volumeMounts:
+            - name: kratos-config-volume
+              mountPath: /etc/config
+              readOnly: true
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/valid/email.body.gotmpl
+              subPath: verification.valid.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/invalid/email.body.gotmpl
+              subPath: verification.invalid.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/valid/email.subject.gotmpl
+              subPath: verification.valid.subject.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/invalid/email.subject.gotmpl
+              subPath: verification.invalid.subject.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/valid/email.body.plaintext.gotmpl
+              subPath: verification.valid.plaintext.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/verification/invalid/email.body.plaintext.gotmpl
+              subPath: verification.invalid.plaintext.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/valid/email.body.gotmpl
+              subPath: recovery.valid.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/invalid/email.body.gotmpl
+              subPath: recovery.invalid.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/valid/email.subject.gotmpl
+              subPath: recovery.valid.subject.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/invalid/email.subject.gotmpl
+              subPath: recovery.invalid.subject.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/valid/email.body.plaintext.gotmpl
+              subPath: recovery.valid.plaintext.gotmpl
+            - name: templates
+              mountPath: /home/ory/courier/templates/recovery/invalid/email.body.plaintext.gotmpl
+              subPath: recovery.invalid.plaintext.gotmpl
+          env:
+            - name: DSN
+              valueFrom:
+                secretKeyRef:
+                  name: ory-kratos
+                  key: DSN
+          ports:
+            - name: http-admin
+              containerPort: 4434
+              protocol: TCP
+            - name: http-public
+              containerPort: 4433
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/alive
+              port: http-admin
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/ready
+              port: http-admin
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deeploy-usage
+  namespace: deeploy
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: deeploy-usage
+  template:
+    metadata:
+      labels:
+        app: deeploy-usage
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/usage/configMap.yml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: deeploy-usage
+          {{ if not .Values.devMode -}}
+          image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
+          command:
+            - "/bin/sh"
+            - "./start.sh"
+            - "usage"
+          {{- else -}}
+          image: "deeploy-uage"
+          command:
+            - "nest"
+            - "start"
+            - "usage"
+            - "--watch"
+          {{- end}}
+          {{ if .Values.devMode -}}
+          env:
+            - name: RUN_ENV
+              value: 'tilt'
+          {{- end}}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: database
+            - secretRef:
+                name: general-config
+            - secretRef:
+                name: token
+            - configMapRef:
+                name: usage
+      serviceAccountName: deeploy-usage
+      imagePullSecrets:
+        - name: image-registry

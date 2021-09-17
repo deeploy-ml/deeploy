@@ -1,0 +1,29 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: deeploy-usage-tracker
+  namespace: deeploy
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - pods
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: namespace-tracker
+rules:
+- verbs:
+    - get
+    - list
+    - watch
+  apiGroups:
+    - ''
+  resources:
+    - namespaces

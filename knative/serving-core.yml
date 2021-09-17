@@ -1400,6 +1400,7 @@ metadata:
   annotations:
     knative.dev/example-checksum: "6a69cdef"
 data:
+  kubernetes.podspec-nodeselector: "enabled"
   _example: |
     ################################
     #                              #

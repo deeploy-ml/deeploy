@@ -10,4 +10,4 @@ data:
   DB_MIGRATIONS: "true"
   TOKEN_URL: 'http://deeploy-token.deeploy.svc.cluster.local/token/'
   LOGGER_URL: 'http://deeploy-logger.deeploy.svc.cluster.local/logger/'
-  DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'
+  DEPLOYMENT_URL: 'http://deeploy-core.deeploy.svc.cluster.local/'

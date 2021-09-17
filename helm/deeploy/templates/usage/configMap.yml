@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: usage
+  namespace: deeploy
+data:
+  PORT: '3000'
+  DB_SYNCHRONIZE: 'false'
+  DB_LOGGING: 'false'
+  DB_MIGRATIONS: 'false'
+  ACCOUNTS_PORT: {{ template "accountsPort" . }}
+  ACCOUNTS_HOST: {{ template "accountsHost" . }}
+  ACCOUNTS_TLS: {{ template "accountsTLS" . }}

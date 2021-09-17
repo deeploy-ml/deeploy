@@ -6,7 +6,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: ory-kratos
+    app: kratos
   ports:
     - port: 80
       name: public-ory-kratos

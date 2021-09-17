@@ -4,7 +4,7 @@ devMode: false
 images:
   registry: 709825985650.dkr.ecr.us-east-1.amazonaws.com
   path: /deeploy
-  tag: '1.12.1'
+  tag: '1.14.0'
   username:
   password:
 
@@ -28,18 +28,30 @@ database:
   port:
   username:
   password:
+  ssl:
+    enabled: false
+    ca:
 
 remoteBlobStorage:
   enabled: true
-  bucketName:
-  # "AWS_S3" or "GCS"
   type: AWS_S3
-  s3AccessKey: EXAMPLEKEY
-  s3SecretKey: EXAMPLEKEY
-  gcloudApplicationCredentialsJson:
+  aws:
+    bucketName:
+    s3AccessKey:
+    s3SecretKey:
+  azure:
+    subscriptionId:
+    containerName:
+    storageAccountName:
+    tenantId:
+    clientId:
+    clientSecret:
+  gcp:
+    bucketName:
+    gcloudApplicationCredentialsJson:
 
 monitoring:
-  enabled: true
+  enabled: false
   credentials:
     username:
     password:
@@ -49,7 +61,17 @@ security:
     enabled: true
 
   keyManagement:
-    kmsKeyId:
+    kmsType: AWS
+    aws:
+      keyId:
+      accessKey:
+      secretKey:
+    azure:
+      keyId:
+      vaultName:
+      clientId:
+      clientSecret:
+      tenantId:
 
   adminCredentials:
     firstName:
@@ -83,75 +105,7 @@ minio:
   resources:
     requests:
       memory: '256Mi'
-# kratos:
-#   kratos:
-#     config:
-#       dsn: postgres://{{ .Values.database.username }}:{{ .Values.database.password }}@{{ .Values.database.host }}:{{ .Values.database.port }}/deeploy_kratos
-#       identity:
-#         default_schema_url: file:///home/ory/user.schema.json
-#       selfservice:
-#         default_browser_return_url: https://{{ .Values.host }}/
-#         whitelisted_return_urls:
-#           - https://{{ .Values.host }}/
-#           - https://*.{{ .Values.host }}/
-#           - http://localhost:4200/
-#         methods:
-#           password:
-#             enabled: true
-#         flows:
-#           logout:
-#             after:
-#               default_browser_return_url: https://{{ .Values.host }}/
-#           settings:
-#             lifespan: 1h
-#             privileged_session_max_age: 1h
-#             ui_url: https://{{ .Values.host }}/account/settings
-#             after:
-#               default_browser_return_url: https://{{ .Values.host }}/settings?succes=true
-#           verification:
-#             enabled: true
-#             lifespan: 1h
-#             ui_url: https://{{ .Values.host }}/verify
-#             after:
-#               default_browser_return_url: https://{{ .Values.host }}/verify?succes=true
-#           login:
-#             lifespan: 1h
-#             ui_url: https://{{ .Values.host }}/login
-#             after:
-#               default_browser_return_url: https://{{ .Values.host }}/
-#           registration:
-#             lifespan: 10m
-#             ui_url: https://{{ .Values.host }}/register
-#             after:
-#               default_browser_return_url: https://{{ .Values.host }}/
-#               password:
-#                 hooks:
-#                   - hook: session
-#           error:
-#             ui_url: https://{{ .Values.host }}/error
-#           recovery:
-#             enabled: true
-#             ui_url: https://{{ .Values.host }}/recovery
-#       courier:
-#         smtp:
-#           connection_uri: smtps://{{ .Values.email.username }}:{{ .Values.email.password }}@{{ .Values.email.smtpHost }}:{{ .Values.email.port }}?skip_ssl_verify=true
-#           from_address: {{ .Values.email.fromAddress }}
-#       serve:
-#         admin:
-#           host: 0.0.0.0
-#           port: 4434
-#           base_url: http://ory-kratos.deeploy:8080/
-#         public:
-#           host: 0.0.0.0
-#           port: 4433
-#           base_url: https://api.{{ .Values.host }}/v1/auth/
-#       secrets:
-#         default:
-#           - bdH49tgohoBgYDrbeROj19EWdH
-#       hashers:
-#         argon2:
-#           parallelism: 1
-#           memory: 131072
-#           iterations: 2
-#           salt_length: 16
-#           key_length: 16
+
+dev:
+  enabled: false
+  runPreInstall: true

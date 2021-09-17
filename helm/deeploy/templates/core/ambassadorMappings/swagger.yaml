@@ -1,0 +1,30 @@
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-core-swagger
+  namespace: deeploy
+spec:
+  prefix: '/v2/core/swagger'
+  rewrite: '/v2/core/swagger'
+  service: deeploy-core.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true

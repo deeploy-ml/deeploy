@@ -36,14 +36,14 @@ spec:
 apiVersion: getambassador.io/v2
 kind:  Mapping
 metadata:
-  name:  deeploy-token-keys
+  name:  deeploy-token-key-pairs
   namespace: deeploy
 spec:
-  prefix: '/v2/keys($|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+  prefix: '/v2/personalKeyPairs($|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
   prefix_regex: true
   regex_rewrite: 
-    pattern: '/v2/keys($|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
-    substitution: '/keys\1'
+    pattern: '/v2/personalKeyPairs($|/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+    substitution: '/personalKeyPairs\1'
   service: deeploy-token.deeploy
   add_request_headers:
     x-is-public: 'true'

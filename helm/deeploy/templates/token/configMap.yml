@@ -8,8 +8,5 @@ data:
   DB_SYNCHRONIZE: 'false'
   DB_LOGGING: 'false'
   DB_MIGRATIONS: 'true'
-  DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'
+  DEPLOYMENT_URL: 'http://deeploy-core.deeploy.svc.cluster.local/'
   KRATOS_ADMIN_URL: 'http://ory-kratos.deeploy.svc.cluster.local:8080/'
-  KMS_KEY_ID: {{ .Values.security.keyManagement.kms.keyId }}
-  KMS_ACCESS_KEY: {{ .Values.security.keyManagement.kms.awsAccessKey }}
-  KMS_SECRET_KEY: {{ .Values.security.keyManagement.kms.awsSecretKey }}

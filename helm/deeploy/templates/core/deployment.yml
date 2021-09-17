@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deeploy-token
+  name: deeploy-core
   namespace: deeploy
 spec:
   replicas: 1
@@ -9,41 +9,53 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: deeploy-token
+      app: deeploy-core
   template:
     metadata:
       labels:
-        app: deeploy-token
+        app: deeploy-core
       annotations:
-        checksum/configmap: {{ include (print $.Template.BasePath "/token/configMap.yml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/token/configSecret.yml") . | sha256sum }}
-        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/core/configMap.yml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/core/configSecret.yml") . | sha256sum }}
         checksum/database: {{ include (print $.Template.BasePath "/db/secret.yaml") . | sha256sum }}
+        checksum/general-secret: {{ include (print $.Template.BasePath "/general_config/generalConfig.yaml") . | sha256sum }}
     spec:
       containers:
-        - name: deeploy-token
+        - name: deeploy-core
           {{ if not .Values.devMode -}}
           image: "{{ .Values.images.registry }}{{ .Values.images.path }}/deeploy{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
           command:
             - "/bin/sh"
             - "./start.sh"
-            - "token"
+            - "core"
           {{- else -}}
-          image: "deeploy-token"
+          image: "deeploy-core"
           command:
             - "nest"
             - "start"
-            - "token"
+            - "core"
             - "--watch"
-          {{- end}}
-          resources:
-            limits:
-              cpu: 400m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 128Mi
+          {{- end }}
           env:
+            {{ if .Values.devMode -}}
+            - name: RUN_ENV
+              value: 'tilt'
+            {{- end }}
+            {{ if not .Values.remoteBlobStorage.enabled -}}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-secret
+                  key: accesskey
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-secret
+                  key: secretkey
+            {{- else if and .Values.remoteBlobStorage.enabled (eq .Values.remoteBlobStorage.type "GCS") -}}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/usr/src/app/config/gcloud-application-credentials.json"
+            {{- end }}
             - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -54,37 +66,34 @@ spec:
                 secretKeyRef:
                   name: rabbitmq
                   key: rabbitmq-password
-            {{ if .Values.devMode -}}
-            - name: RUN_ENV
-              value: 'tilt'
-            {{- end}}
           imagePullPolicy: Always
           ports:
             - containerPort: 80
           envFrom:
             - secretRef:
+                name: core
+            - secretRef:
                 name: general-config
             - secretRef:
                 name: database
-            - secretRef:
-                name: token
             - configMapRef:
-                name: token
+                name: core
           readinessProbe:
             httpGet:
               path: /health
               port: 3000
             initialDelaySeconds: 3
             periodSeconds: 3
+      serviceAccountName: deeploy-deployment
       imagePullSecrets:
         - name: image-registry
       {{ if .Values.devMode -}}
       initContainers:
-        - name: deeploy-token-init
+        - name: deeploy-core-init
           command:
             - '/bin/sh'
             - './start-dev.sh'
-            - 'token'
+            - 'core'
           env:
             - name: RUN_ENV
               value: 'tilt'
@@ -98,11 +107,11 @@ spec:
                 secretKeyRef:
                   name: rabbitmq
                   key: rabbitmq-password
-          image: "deeploy-token"
+          image: "deeploy-core"
           imagePullPolicy: Always
           envFrom:
             - secretRef:
-                name: token
+                name: core
             - configMapRef:
-                name: token
+                name: core
       {{- end }}

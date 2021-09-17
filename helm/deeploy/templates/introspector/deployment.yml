@@ -54,6 +54,13 @@ spec:
             - name: RUN_ENV
               value: 'tilt'
             {{- end }}
+          resources:
+            limits:
+              cpu: 800m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 128Mi
           envFrom:
             - secretRef:
                 name: general-config

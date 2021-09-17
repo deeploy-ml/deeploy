@@ -1,0 +1,100 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-deployment
+  namespace: deeploy
+spec:
+  prefix: '/v2/(deployments|workspaces/.*/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})($|/owner)($|/.*)))'
+  prefix_regex: true
+  regex_rewrite:
+    pattern: '/v2/(deployments|workspaces/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/deployments($|(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))($|/owner))'
+    substitution: '/\1'
+  service: deeploy-core.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  timeout_ms: 60000
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-deployment-versions
+  namespace: deeploy
+spec:
+  prefix: '/v2/(.*/versions($|/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+  prefix_regex: true
+  regex_rewrite:
+    pattern: '/v2/(.*/versions($|/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}))'
+    substitution: '/\1'
+  service: deeploy-core.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  timeout_ms: 60000
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: deeploy-deployment-kubernetes
+  namespace: deeploy
+spec:
+  prefix: '/v2/nodeTypes'
+  regex_rewrite:
+    pattern: '/v2/nodeTypes'
+    substitution: '/nodeTypes'
+  service: deeploy-core.deeploy
+  add_request_headers:
+    x-is-public: 'true'
+  timeout_ms: 60000
+  cors:
+    origins:
+      - 'https://{{ .Values.host }}'
+    methods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      - HEAD
+      - CONNECT
+      - PATCH
+    headers:
+      - x-kratos-authenticated-identity-id
+      - Authorization
+      - Accept
+      - Content-Type
+    credentials: true

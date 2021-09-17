@@ -429,8 +429,14 @@ data:
         },
         "sklearn": {
           "v1": {
-            "image": "gcr.io/kfserving/sklearnserver",
-            "defaultImageVersion": "v0.5.1",
+            {{ if .Values.dev.enabled -}}
+            "image": "deeployml/sklearnserver",
+            "defaultImageVersion": "{{ template "deeployKFServingVersion" . -}}",
+            {{- else -}}
+            "image": "{{ .Values.images.registry }}{{ .Values.images.path }}/xgbserver{{ template "awsExtension" . -}}",
+            "defaultImageVersion": "{{ .Values.images.tag }}",
+            {{- end }}
+            "defaultMethod": "predict",
             "supportedFrameworks": [
               "sklearn"
             ],
@@ -447,8 +453,14 @@ data:
         },
         "xgboost": {
           "v1": {
-            "image": "gcr.io/kfserving/xgbserver",
-            "defaultImageVersion": "v0.5.1",
+            {{ if .Values.dev.enabled -}}
+            "image": "deeployml/xgbserver",
+            "defaultImageVersion": "{{ template "deeployKFServingVersion" . -}}",
+            {{- else -}}
+            "image": "{{ .Values.images.registry }}{{ .Values.images.path }}/xgbserver{{ template "awsExtension" . -}}",
+            "defaultImageVersion": "{{ .Values.images.tag }}",
+            {{- end }}
+            "defaultMethod": "predict",
             "supportedFrameworks": [
               "xgboost"
             ],
@@ -632,7 +644,11 @@ spec:
               fieldPath: metadata.namespace
         - name: SECRET_NAME
           value: kfserving-webhook-server-cert
-        image: gcr.io/kfserving/kfserving-controller:v0.5.1
+        {{ if .Values.dev.enabled -}}
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/kfserving-controller{{ template "awsExtension" . -}}:{{ template "deeployKFServingVersion" . -}}"
+        {{- else -}}
+        image: "{{ .Values.images.registry }}{{ .Values.images.path }}/kfserving-controller{{ template "awsExtension" . -}}:{{ .Values.images.tag }}"
+        {{- end }}
         imagePullPolicy: Always
         name: manager
         ports:
@@ -651,6 +667,8 @@ spec:
           name: cert
           readOnly: true
       terminationGracePeriodSeconds: 10
+      imagePullSecrets:
+        - name: image-registry
       volumes:
       - name: cert
         secret:

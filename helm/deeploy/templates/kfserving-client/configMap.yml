@@ -8,11 +8,15 @@ data:
   BUCKET_NAME: "deeploy"
   STORAGE_TYPE: "minio"
   {{- else if and .Values.remoteBlobStorage.enabled (eq .Values.remoteBlobStorage.type "AWS_S3") -}}
-  BUCKET_NAME: {{ .Values.remoteBlobStorage.bucketName | quote }}
+  BUCKET_NAME: {{ .Values.remoteBlobStorage.aws.bucketName | quote }}
   STORAGE_TYPE: "aws"
   {{- else if and .Values.remoteBlobStorage.enabled (eq .Values.remoteBlobStorage.type "GCS") -}}
-  BUCKET_NAME: {{ .Values.remoteBlobStorage.bucketName | quote }}
+  BUCKET_NAME: {{ .Values.remoteBlobStorage.gcp.bucketName | quote }}
   STORAGE_TYPE: "gcs"
+  {{- else if and .Values.remoteBlobStorage.enabled (eq .Values.remoteBlobStorage.type "AZURE") -}}
+  BUCKET_NAME: {{ .Values.remoteBlobStorage.azure.containerName | quote }}
+  STORAGE_TYPE: "azure"
+  AZURE_STORAGE_ACCOUNT_NAME: {{ .Values.remoteBlobStorage.azure.storageAccountName | quote }}
   {{- end }}
-  DEPLOYMENT_URL: 'http://deeploy-deployment.deeploy.svc.cluster.local/'
+  DEPLOYMENT_URL: 'http://deeploy-core.deeploy.svc.cluster.local/'
   TOKEN_URL: 'http://deeploy-token.deeploy.svc.cluster.local/'

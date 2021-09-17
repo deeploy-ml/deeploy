@@ -1422,6 +1422,8 @@ spec:
                             type: string
                           storageUri:
                             type: string
+                          method:
+                            type: string
                         required:
                         - storageUri
                         type: object
@@ -1507,6 +1509,8 @@ spec:
                           runtimeVersion:
                             type: string
                           storageUri:
+                            type: string
+                          method:
                             type: string
                         required:
                         - storageUri
@@ -3455,6 +3459,8 @@ spec:
                             type: string
                           storageUri:
                             type: string
+                          method:
+                            type: string
                         required:
                         - storageUri
                         type: object
@@ -3540,6 +3546,8 @@ spec:
                           runtimeVersion:
                             type: string
                           storageUri:
+                            type: string
+                          method:
                             type: string
                         required:
                         - storageUri
@@ -11010,6 +11018,8 @@ spec:
                             format: int32
                             type: integer
                         type: object
+                      method:
+                        type: string
                       name:
                         type: string
                       ports:
@@ -13369,6 +13379,8 @@ spec:
                             format: int32
                             type: integer
                         type: object
+                      method:
+                        type: string
                       name:
                         type: string
                       ports:
