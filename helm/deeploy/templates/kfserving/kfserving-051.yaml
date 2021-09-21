@@ -411,8 +411,8 @@ data:
     {
         "tensorflow": {
             "image": "tensorflow/serving",
-            "defaultImageVersion": "1.14.0",
-            "defaultGpuImageVersion": "1.14.0-gpu",
+            "defaultImageVersion": "1.14.1",
+            "defaultGpuImageVersion": "1.14.1-gpu",
             "defaultTimeout": "60",
             "supportedFrameworks": [
               "tensorflow"
